@@ -1,45 +1,45 @@
 // Variables of pressed keys.
-var upPressed, downPressed, leftPressed, rightPressed, lastPressed; 
+var upPressed, downPressed, leftPressed, rightPressed, lastPressed;
+
 // Arrays of arrow and WASD key codes for controlling the player.
-var leftKeys = [37, 65],
+const leftKeys = [37, 65],
 	rightKeys = [39, 68],
 	upKeys = [38, 87],
 	downKeys = [40, 83];
 
-
-function keyup(event) {
-	if (leftKeys.includes(event.keyCode))
+const keyup = event => {
+	if (leftKeys.includes(event.which))
 		leftPressed = false,
-		lastPressed = 'left';
-	if (rightKeys.includes(event.keyCode))
+			lastPressed = 'left';
+	if (rightKeys.includes(event.which))
 		rightPressed = false,
-		lastPressed = 'right';
-	if (upKeys.includes(event.keyCode))
+			lastPressed = 'right';
+	if (upKeys.includes(event.which))
 		upPressed = false,
-		lastPressed = 'up';
-	if (downKeys.includes(event.keyCode))
+			lastPressed = 'up';
+	if (downKeys.includes(event.which))
 		downPressed = false,
-		lastPressed = 'down';
+			lastPressed = 'down';
 
 	player.className = 'character stand ' + lastPressed;
 }
 
 
-function move(player) {
+const move = (player, skyHeight) => {
 	const positionLeft = player.offsetLeft;
 	const positionTop = player.offsetTop;
 
 	if (leftPressed)
 		player.style.left = positionLeft - 1 + 'px',
-		player.className = 'character walk left';
+			player.className = 'character walk left';
 
 	if (rightPressed)
 		player.style.left = positionLeft + 1 + 'px',
-		player.className = 'character walk right';
+			player.className = 'character walk right';
 
 	if (upPressed) {
 		// Don't go above the sky. 'document.elementFromPoint' is a bit buggy.
-		player.style.top = (positionTop <= sky.offsetHeight ? sky.offsetHeight : positionTop - 1) + 'px';
+		player.style.top = (positionTop <= skyHeight ? skyHeight : positionTop - 1) + 'px';
 
 		if (!leftPressed && !rightPressed)
 			player.className = 'character walk up';
@@ -57,28 +57,33 @@ function move(player) {
 }
 
 
-function keydown(event) {
-	if (leftKeys.includes(event.keyCode))
-		leftPressed = leftKeys.includes(event.keyCode);
-	else if (rightKeys.includes(event.keyCode))
-		rightPressed = rightKeys.includes(event.keyCode);
-	else if (upKeys.includes(event.keyCode))
-		upPressed = upKeys.includes(event.keyCode);
-	else if (downKeys.includes(event.keyCode))
-		downPressed = downKeys.includes(event.keyCode);
+const keydown = event => {
+	if (leftKeys.includes(event.which))
+		leftPressed = leftKeys.includes(event.which);
+	else if (rightKeys.includes(event.which))
+		rightPressed = rightKeys.includes(event.which);
+	else if (upKeys.includes(event.which))
+		upPressed = upKeys.includes(event.which);
+	else if (downKeys.includes(event.which))
+		downPressed = downKeys.includes(event.which);
 }
 
-
-function myLoadFunction() {
-	window.sky = document.querySelector('.sky')
-	const player = document.getElementById('player'),
-		timeout = setInterval(move, 10, player),
+document.addEventListener('DOMContentLoaded', () => {
+	var playing,
+		player = document.getElementById('player'),
+		startBtn = document.querySelector('.start'),
 		sky = document.querySelector('.sky'),
-		skyHeight = sky.offsetHeight;
+		skyHeight = sky.offsetHeight,
+		timeout = setInterval(move, 10, player, skyHeight),
+		mainAlien = document.querySelector('#alien.main');
 
 	document.addEventListener('keydown', keydown);
 	document.addEventListener('keyup', keyup);
-}
 
-
-document.addEventListener('DOMContentLoaded', myLoadFunction);
+	startBtn.addEventListener('click', e => {
+		playing = !document.body.classList.add('playing');
+		// Animate aliet above sky and hide it
+		mainAlien.animate([{ transform: 'translateY(-250%)' }], { duration: 500, })
+			.onfinish = () => mainAlien.classList.add('hidden');
+	});
+});

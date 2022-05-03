@@ -1,0 +1,56 @@
+.hidden {
+    display: none;
+}
+
+.hud {
+    pointer-events: none;
+}
+
+.bomb {
+    z-index: 1;
+}
+
+#alien {
+    transform: rotate(180deg);
+    z-index: 1;
+}
+
+
+/* Slowly move alien up forever */
+@keyframes alien-move {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-500%);
+    }
+}
+
+#alien.main {
+    transform: none;
+    /* Slowly move alien up forever */
+    /* animation: alien-move 100s infinite ease;
+    transform: translateY(-500%); */
+}
+
+@keyframes scaleOut {
+    0% {
+        display: var(--display, block);
+        transform: scale(1);
+    }
+
+    50% {
+        display: var(--display, block);
+        transform: scale(0);
+    }
+
+    100% {
+        display: none;
+        transform: scale(0);
+    }
+}
+
+body.playing .start {
+    animation: scaleOut .4s forwards;
+}
