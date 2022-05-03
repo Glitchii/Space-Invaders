@@ -10,47 +10,68 @@
     z-index: 1;
 }
 
-#alien {
+.character {
+    left: 49%;
+}
+
+.alien {
     transform: rotate(180deg);
     z-index: 1;
 }
 
 
 /* Slowly move alien up forever */
-@keyframes alien-move {
+@keyframes alien-move-up {
     0% {
-        transform: translateY(0);
+        transform: translate(var(--x), 100%);
+    }
+
+    10% {
+        transform: translate(var(--x), 0);
     }
 
     100% {
-        transform: translateY(-500%);
+        transform: translate(var(--x), -150%);
     }
 }
 
-#alien.main {
+.alien.main {
     transform: none;
     /* Slowly move alien up forever */
-    /* animation: alien-move 100s infinite ease;
-    transform: translateY(-500%); */
+    animation: alien-move-up 100s infinite ease-out;
+    transform: translate(var(--x), -150%);
 }
 
 @keyframes scaleOut {
     0% {
         display: var(--display, block);
-        transform: scale(1);
+        transform: translate(-50%, -50%) scale(1);
     }
 
     50% {
         display: var(--display, block);
-        transform: scale(0);
+        transform: translate(-50%, -50%) scale(0);
     }
 
     100% {
         display: none;
-        transform: scale(0);
+        transform: translate(-50%, -50%) scale(0);
     }
 }
 
 body.playing .start {
-    animation: scaleOut .4s forwards;
+    animation: scaleOut .5s forwards;
+}
+
+.alien.middle-h, .middle-h {
+    --x: -50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.start {
+	margin-right: inherit;
+	margin-left: inherit;
+	margin-top: inherit;
+	min-width: 190px;
 }

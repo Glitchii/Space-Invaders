@@ -149,7 +149,7 @@ aside ul {
 	background-image: url(/assets/imgs/head1.png);
 }
 
-#alien {
+.alien {
 	background-image: url(/assets/imgs/alien.png);
 	position: absolute;
 	height: 93.8px;
