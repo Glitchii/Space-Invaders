@@ -63,15 +63,20 @@ body.playing .start {
     animation: scaleOut .5s forwards;
 }
 
-.alien.middle-h, .middle-h {
+.alien.middle-h,
+.middle-h {
     --x: -50%;
     left: 50%;
     transform: translate(-50%, -50%);
 }
 
 .start {
-	margin-right: inherit;
-	margin-left: inherit;
-	margin-top: inherit;
-	min-width: 190px;
+    margin-right: inherit;
+    margin-left: inherit;
+    margin-top: inherit;
+    min-width: 190px;
+}
+
+.alien {
+    z-index: 2;
 }
