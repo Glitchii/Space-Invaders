@@ -87,9 +87,9 @@ const keydown = event => {
 	else if (downKeys.includes(event.which))
 		downPressed = downKeys.includes(event.which);
 }
-const blink = (subject, duration = 1000, times = 3) => {
-	return subject.animate(Array(times).fill([{ opacity: '.5' }, { opacity: '1' }]).flat(), { duration: duration, })
-}
+
+const onMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+const blink = (subject, duration = 1000, times = 3) => subject.animate(Array(times).fill([{ opacity: '.5' }, { opacity: '1' }]).flat(), { duration: duration, });
 const renderLives = (health, lives) => {
 	// create lives based on the number of lives
 	health.innerHTML = '';
@@ -102,7 +102,7 @@ const renderLives = (health, lives) => {
 document.addEventListener('DOMContentLoaded', () => {
 	let defaultLives = 1,
 		lives = defaultLives,
-		defaultSpawnInterval = 100,
+		defaultSpawnInterval = 2000,
 		spawnInterval = defaultSpawnInterval,
 		defaultShootInterval = 1000,
 		shootInterval = defaultShootInterval,
@@ -122,6 +122,8 @@ document.addEventListener('DOMContentLoaded', () => {
 		aliensShotElement = document.getElementById('shot'),
 		defaultLevel = 1,
 		level = defaultLevel,
+		levelingInterval = 5000,
+		levelElement = document.getElementById('level'),
 		intervals = [],
 		player = document.getElementById('player'),
 		startBtn = document.querySelector('.start'),
@@ -130,48 +132,128 @@ document.addEventListener('DOMContentLoaded', () => {
 		skyWidth = sky.offsetWidth,
 		timeout = setInterval(move, 10, player, skyHeight, skyWidth),
 		health = document.querySelector('.health'),
-		mainAlien = document.querySelector('.alien.main');
+		mainAlien = document.querySelector('.alien.main'),
+		nameInput = document.getElementById('name'),
+		nameLabel = document.querySelector('label[for="name"]'),
+		nameLabelAltered = false;
 
+	document.querySelector('.info p').addEventListener('click', () => alert(`
+		Information:
+
+		Aliens ships will spawn randomly and shoot at you.
+		Use WASD or arrow keys to move & dodge bombs.
+		Use the space bar to shoot with your arrows at the aliens ships.
+		
+		You have ${lives} lives, if you get hit, you will lose a life.
+		If you run out of lives, you lose.
+	
+		You level up every ${levelingInterval / 1000} seconds.
+		Try to get as much dodges, levels, and kills as possible.`.replace(/^\t+/gm, '')));
+
+	renderBoard();
 	document.addEventListener('keydown', keydown);
 	document.addEventListener('keyup', keyup);
 
+	nameInput.addEventListener('input', () => {
+		if (nameLabelAltered) return;
+		console.log('input');
+		nameLabel.textContent = 'Press enter to submit';
+		nameLabelAltered = true;
+	})
+
+	nameInput.addEventListener('keydown', event => {
+		if (event.key !== 'Enter') return;
+		// Add level, bombs dodged, and aliens shot local storage.
+		localStorage.setItem('board', JSON.stringify({
+			...(JSON.parse(localStorage.getItem('board')) || {}),
+			[nameInput.value]: { level, bombsDodged, aliensShot },
+		}));
+
+		nameInput.value = '';
+		nameLabel.textContent = 'Added to leaderboard';
+		nameInput.classList.add('hidden');
+
+		renderBoard();
+	});
+
+	function renderBoard() {
+		const board = JSON.parse(localStorage.getItem('board')) || {};
+		const tbody = document.querySelector('.board table tbody');
+		tbody.innerHTML = '';
+
+		for (const name of Object.keys(board).sort((a, b) => board[b].level - board[a].level)) {
+			const tr = document.createElement('tr');
+			const td1 = document.createElement('td'),
+				td2 = document.createElement('td'),
+				td3 = document.createElement('td');
+
+			td1.textContent = name;
+			td2.textContent = board[name].level;
+			td3.textContent = board[name].bombsDodged;
+
+			tr.appendChild(td1);
+			tr.appendChild(td2);
+			tr.appendChild(td3);
+
+			tbody.appendChild(tr);
+		}
+	}
+
+
 	const endGame = () => {
-		playing = false; lives = 3;
+		playing = false; lives = 1;
 		spawnInterval = 4000;
 		shootInterval = 2000;
 		shootIntervalMax = 4000;
 		shootIntervalMin = 1000;
 		explosionTime = 1000;
 		player.className = 'character dead';
+
+		nameInput.classList.remove('hidden');
+		nameLabel.textContent = nameLabel.dataset.text;
+		document.body.classList.add('game-over');
 		document.body.classList.remove('playing');
-		renderLives(health, lives);
+		startBtn.classList.remove('hidden');
+
+		if (!onMobile()) {
+			document.body.classList.add('pc');
+			nameInput.focus();
+		}
+
+		// player.classList.remove('stand', 'walk', 'up', 'down', 'left', 'right');
+		// renderLives(health, lives);
 
 		for (e of document.querySelectorAll('.alien, .bomb, .explosion'))
 			e.remove();
 
-		for (int of intervals)
-			clearInterval(int);
-		intervals = [];
+		stopBackgroundWork();
 	}
 
 	startBtn.addEventListener('click', e => {
 		// lives = defaultLives,
-		// level = defaultLevel,
-		// spawnInterval = defaultSpawnInterval,
-		// shootInterval = defaultShootInterval,
-		// shootIntervalMax = defaultShootIntervalMax,
-		// shootIntervalMin = defaultShootIntervalMin,
-		// explosionTime = defaultExplosionTime,
-		// bombsDodged = defaultBombsDodged,
-		// bombSpeed = defaultBombSpeed,
-		// aliensShot = defaultAliensShot,
-		// bombsDodgedElement.textContent = bombsDodged;
-		// document.body.classList.remove('game-over');
-
+		level = defaultLevel;
+		// spawnInterval = defaultSpawnInterval;
+		// shootInterval = defaultShootInterval;
+		// shootIntervalMax = defaultShootIntervalMax;
+		// shootIntervalMin = defaultShootIntervalMin;
+		// explosionTime = defaultExplosionTime;
+		// bombsDodged = defaultBombsDodged;
+		// bombSpeed = defaultBombSpeed;
+		// aliensShot = defaultAliensShot;
+		bombsDodgedElement.textContent = bombsDodged;
+		levelElement.textContent = level;
+		nameLabelAltered = false;
 		gameOver = false;
-		playing = !document.body.classList.add('playing');
 		document.body.classList.remove('game-over');
+		playing = !document.body.classList.add('playing');
 		player.className = 'character stand down';
+
+		setTimeout(() => startBtn.classList.add('hidden'), 3000);
+		document.body.classList.remove('pc');
+
+		// Start counting levels, bombs dodged, aliens shot etc.
+		startBackgroundWork();
+
 		// Animate alien above sky and hide it
 		mainAlien.animate([{ transform: 'translate(-50%, -250%)' }], { duration: 500, })
 			.onfinish = () => mainAlien.classList.add('hidden');
@@ -319,20 +401,6 @@ document.addEventListener('DOMContentLoaded', () => {
 			// 	// alien?.remove();
 			// }, 10000);
 			intervals.push(shootIntervalFunc);
-
-
-			// console.log(alien);
-			window.spawnInterval = spawnInterval;
-			0 && console.log({
-				'Spawn interval': spawnInterval,
-				'alien': alien,
-				'random X': randomX,
-				'random Y': randomY,
-				'posiotnX1': posiotnX1,
-				'posiotnX2': posiotnX2,
-			})
-
-			return
 		}
 
 		newAlien(0);
@@ -340,20 +408,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	// spawnInterval = 2000;
 	// startBtn.click();
-	lives = 4
 
 	// Interval to speed up spawn rate, shoot rate, and alien speed
-	setInterval(() => {
-		// Speed up everything as the level goes up
-		bombSpeed -= 1;
-		spawnInterval -= 1;
-		shootInterval -= 1;
-		shootIntervalMax -= 1;
-		if (shootIntervalMax < shootIntervalMin) {
-			shootIntervalMax = 1000;
-			shootIntervalMin = 0;
-		}
-	}, 1000);
+	function startBackgroundWork() {
+		intervals.push(
+			// Interval to change level
+			setInterval(() => {
+				if (gameOver) return;
+				level++;
+				levelElement.textContent = level;
+			}, levelingInterval),
 
-	// Interval to change displayed level
+			// Interval to change displayed level
+			setInterval(() => {
+				if (gameOver) return;
+				// Speed up everything as the level goes up
+				bombSpeed -= 1;
+				spawnInterval -= 1;
+				shootInterval -= 1;
+				shootIntervalMax -= 1;
+				if (shootIntervalMax < shootIntervalMin) {
+					shootIntervalMax = 1000;
+					shootIntervalMin = 0;
+				}
+			}, 1000),
+		);
+	}
+
+	function stopBackgroundWork() {
+		for (const interval of intervals)
+			clearInterval(interval);
+		intervals = [];
+	}
 });

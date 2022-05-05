@@ -8,6 +8,7 @@ body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    color: #fff;
 
 }
 
@@ -66,17 +67,20 @@ body {
 @keyframes scaleOut {
     0% {
         display: var(--display, block);
-        transform: translate(-50%, -50%) scale(1);
+        /* transform: translate(-50%, -50%) scale(1); */
+        transform: scale(1);
     }
 
     50% {
         display: var(--display, block);
-        transform: translate(-50%, -50%) scale(0);
+        /* transform: translate(-50%, -50%) scale(0); */
+        transform: scale(0);
     }
 
     100% {
         display: none;
-        transform: translate(-50%, -50%) scale(0);
+        /* transform: translate(-50%, -50%) scale(0); */
+        transform: scale(0);
     }
 }
 
@@ -96,6 +100,9 @@ body.playing .start {
     margin-left: inherit;
     margin-top: inherit;
     min-width: 190px;
+    position: static;
+    align-self: center;
+    /* max-width: 200px; */
 }
 
 .alien {
@@ -174,12 +181,16 @@ body.playing .start {
 
 .hidden,
 body.game-over :is(.start #start, .hud),
-body:not(.game-over) :is(.start #again),
+body:not(.game-over) :is(.start #again, .end),
 body.playing .screen .board,
+body.playing .center .info,
 /* body:not(.playing) .screen .levels */
-body:not(.playing) :is(.hud)
-{
+body:not(.playing) :is(.hud) {
     display: none;
+}
+
+.pointer {
+    cursor: pointer;
 }
 
 /* table tr :is(th, td):not(:last-child) {
@@ -215,7 +226,7 @@ td {
 caption {
     font-size: 1.5em;
     font-weight: bold;
-    text-align: left;
+    /* text-align: left; */
     padding-bottom: .4em;
 }
 
@@ -229,7 +240,7 @@ thead {
 th,
 td {
     /* padding: 15px; */
-    text-align: left;
+    /* text-align: left; */
 }
 
 table {
@@ -239,14 +250,8 @@ table {
     min-width: 200px;
 }
 
-table>.x {
-    width: 270px;
-    min-height: 59px;
-    background: #00000075;
-    border-radius: 10px;
-    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
-    border: 1px solid #cccccc2b;
-    padding-left: 18px;
+table * {
+    text-align: end;
 }
 
 .screen .hud ul {
@@ -262,4 +267,87 @@ h6,
 caption {
     margin: 0;
     font-family: 'Anton';
+}
+
+.center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    animation: deadAn .5s ease;
+}
+
+.center .died {
+    color: #ce1829;
+    align-self: center;
+    animation: deadTextAn 2s ease;
+    font-size: 2.5rem;
+}
+
+@keyframes deadAn {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translate(-50%, -50%) scale(.8);
+    }
+}
+
+
+@keyframes deadTextAn {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: scale(.8);
+    }
+}
+
+.inputs {
+    margin: 20px 0 10% 0;
+    text-align: center;
+}
+
+.inputs label {
+    /* display: block; */
+    margin-right: 10px;
+}
+
+.inputs input {
+    background: #ccc;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+    height: 34px;
+    border-radius: 20px;
+    box-shadow: 4px 4px 4px #000;
+    color: black;
+    padding: 10px 15px;
+    margin-top: 10px;
+}
+
+body.pc .inputs input {
+    padding: 0 10px;
+    background: none;
+    color: #fff;
+    border-radius: 20px;
+}
+
+body.game-over .center {
+    top: 40%;
+}
+
+.center .info {
+    margin-top: 10px;
+    align-self: center;
+}
+
+.center .info p {
+    font-size: 80%;
+    text-shadow: 2px 2px 2px #000;
+}
+
+.center .info p:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
 }
