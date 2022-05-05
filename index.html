@@ -8,11 +8,52 @@
 		<script src="/assets/js/game.js"></script>
 	</head>
 	<body>
-		<div class="hud">
-			<ul class="health hidden">
-			</ul>
+		<div class="screen">
+			<div class="left">
+				<div class="levels">
+					<h2 class="level">Level <span id="level">1</span></h2>
+					<p class="dodged">Bombs dodged: <span id="dodged">0</span></p>
+					<p class="shot">Aliens shot: <span id="shot">0</span></p>
+				</div>
+			</div>
+			<div class="right">
+				<div class="board">
+					<table>
+						<caption>Leaderboard</caption>
+						<thead>
+							<tr>
+								<th>Name</th>
+								<th>Level</th>
+								<th>Dodged</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- <tr>
+								<td>John</td>
+								<td>1</td>
+								<td>0</td>
+							</tr>
+							<tr>
+								<td>Jane</td>
+								<td>2</td>
+								<td>0</td>
+							</tr> -->
+						</tbody>
+					</table>
+				</div>
+				<div class="hud">
+					<ul class="health">
+						<li></li>
+						<li></li>
+						<li></li>
+					</ul>
+				</div>
+			</div>
 		</div>
-		<div class="start middle-h">Start</div>
+		<div class="start middle-h">
+			<span id="start">Start</span>
+			<span id="again">Play Again?</span>
+		</div>
 		<div class="sky"></div>
 		<div id="player" class="character stand down">
 			<div class="head"></div>

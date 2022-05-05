@@ -1,10 +1,19 @@
-.hidden {
-    display: none;
+html,
+body {
+    width: 100%;
+    height: 100%;
 }
 
-.hud {
-    pointer-events: none;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
 }
+
+/* .hud {
+    pointer-events: none;
+} */
 
 .bomb {
     z-index: 1;
@@ -21,7 +30,7 @@
 
 
 /* Slowly move alien up forever */
-@keyframes alien-move-up {
+@keyframes alien-move-up-and-down {
     0% {
         transform: translate(var(--x), 100%);
     }
@@ -30,15 +39,27 @@
         transform: translate(var(--x), 0);
     }
 
+    50% {
+        transform: translate(var(--x), -120%);
+    }
+
+    51% {
+        transform: translate(var(--x), -120%) rotate(180deg);
+    }
+
+    99% {
+        transform: translate(var(--x), 100%) rotate(180deg);
+    }
+
     100% {
-        transform: translate(var(--x), -150%);
+        transform: translate(var(--x), 100%) rotate(0deg);
     }
 }
 
 .alien.main {
     transform: none;
     /* Slowly move alien up forever */
-    animation: alien-move-up 100s infinite ease-out;
+    animation: alien-move-up-and-down 100s ease-out infinite;
     transform: translate(var(--x), -150%);
 }
 
@@ -79,4 +100,166 @@ body.playing .start {
 
 .alien {
     z-index: 2;
+}
+
+.explosion {
+    transform: scale(var(--scale, 1));
+}
+
+.hud {
+    position: static;
+    width: auto;
+    z-index: auto;
+}
+
+.screen {
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    padding: 1em;
+}
+
+.screen * {
+    color: #fff;
+    text-shadow: 2px 2px 2px #000;
+}
+
+.screen .left>* {
+    /* width: 270px; */
+    min-height: 59px;
+    background: #ccc;
+    background: #0000008f;
+    /* margin: 5px 20px; */
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+}
+
+@keyframes levelsAn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+
+.screen .levels {
+    animation: levelsAn 1s ease;
+
+}
+
+@keyframes boardAn {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+
+    50% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+}
+
+.screen .board {
+    /* animation: boardAn 1.5s ease; */
+    /* margin-top: 50px; */
+}
+
+@keyframes hudsAn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+.hidden,
+body.game-over :is(.start #start, .hud),
+body:not(.game-over) :is(.start #again),
+body.playing .screen .board,
+/* body:not(.playing) .screen .levels */
+body:not(.playing) :is(.hud)
+{
+    display: none;
+}
+
+/* table tr :is(th, td):not(:last-child) {
+    border-right: 1px solid #ccccccd9;
+}
+
+table tr :is(th, td)~:is(th, td) {
+    padding-left: 10px;
+} */
+
+/* table tr:nth-child(even), */
+thead {
+    background-color: #cccccc26;
+}
+
+table tr td:last-of-type {
+    border: none;
+}
+
+.screen .right {
+    animation: hudsAn 1s ease;
+}
+
+table,
+th,
+td {
+    /* border: 1px solid #cccccc; */
+    border-collapse: collapse;
+    border-spacing: 0 1rem;
+    padding: .3em .1em;
+}
+
+caption {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: left;
+    padding-bottom: .4em;
+}
+
+thead {
+
+    /* font-family: 'Anton'; */
+    /* font-weight: bolder; */
+    /* font-size: 1.1rem; */
+}
+
+th,
+td {
+    /* padding: 15px; */
+    text-align: left;
+}
+
+table {
+    /* border-collapse: collapse; */
+    /* border-collapse: separate; */
+    /* border-spacing: 0 16px; */
+    min-width: 200px;
+}
+
+table>.x {
+    width: 270px;
+    min-height: 59px;
+    background: #00000075;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    border: 1px solid #cccccc2b;
+    padding-left: 18px;
+}
+
+.screen .hud ul {
+    margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+caption {
+    margin: 0;
+    font-family: 'Anton';
 }

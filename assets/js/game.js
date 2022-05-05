@@ -40,7 +40,7 @@ const move = (player, skyHeight, screenWidth) => {
 		if (!leftPressed && !rightPressed)
 			// player.className = 'character walk up';
 			player.classList.remove('up', 'down', 'left', 'right');
-			player.classList.add('character', 'walk', 'up');
+		player.classList.add('character', 'walk', 'up');
 	}
 
 	if (downPressed) {
@@ -51,7 +51,7 @@ const move = (player, skyHeight, screenWidth) => {
 		if (!leftPressed && !rightPressed)
 			// player.className = 'character walk down';
 			player.classList.remove('up', 'down', 'left', 'right');
-			player.classList.add('character', 'walk', 'down');
+		player.classList.add('character', 'walk', 'down');
 	}
 
 
@@ -62,7 +62,7 @@ const move = (player, skyHeight, screenWidth) => {
 		if (!upPressed && !downPressed)
 			// player.className = 'character walk left';
 			player.classList.remove('up', 'down', 'left', 'right');
-			player.classList.add('character', 'walk', 'left');
+		player.classList.add('character', 'walk', 'left');
 	}
 
 	if (rightPressed) {
@@ -71,7 +71,7 @@ const move = (player, skyHeight, screenWidth) => {
 		if (!upPressed && !downPressed)
 			// player.className = 'character walk right';
 			player.classList.remove('up', 'down', 'left', 'right');
-			player.classList.add('character', 'walk', 'right');
+		player.classList.add('character', 'walk', 'right');
 	}
 }
 
@@ -90,19 +90,39 @@ const keydown = event => {
 const blink = (subject, duration = 1000, times = 3) => {
 	return subject.animate(Array(times).fill([{ opacity: '.5' }, { opacity: '1' }]).flat(), { duration: duration, })
 }
+const renderLives = (health, lives) => {
+	// create lives based on the number of lives
+	health.innerHTML = '';
+	for (let i = 0; i < lives; i++)
+		health.appendChild(document.createElement('li'));
+
+	health.classList.remove('hidden');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-	let // The number of lives the player has by default.
-		lives = 0
-		// Interval at which alien ships spawn.
-		spawnInterval = 1000,
-		// Interval at which alien ships spawn.
-		shootInterval = 1000,
-		shootIntervalMax = 4000,
-		shootIntervalMin = 1000,
-		explosionTime = 1000,
-		// The speed in seconds at which the bombs move once fired.
-		bombSpeed = 5000,
+	let defaultLives = 1,
+		lives = defaultLives,
+		defaultSpawnInterval = 100,
+		spawnInterval = defaultSpawnInterval,
+		defaultShootInterval = 1000,
+		shootInterval = defaultShootInterval,
+		defaultShootIntervalMax = 4000,
+		shootIntervalMax = defaultShootIntervalMax,
+		defaultShootIntervalMin = 1000,
+		shootIntervalMin = defaultShootIntervalMin,
+		defaultExplosionTime = 1000,
+		explosionTime = defaultExplosionTime,
+		defaultBombSpeed = 5000,
+		bombSpeed = defaultBombSpeed,
+		defaultBombsDodged = 0,
+		bombsDodged = defaultBombsDodged,
+		bombsDodgedElement = document.getElementById('dodged'),
+		defaultAliensShot = 0,
+		aliensShot = defaultAliensShot,
+		aliensShotElement = document.getElementById('shot'),
+		defaultLevel = 1,
+		level = defaultLevel,
+		intervals = [],
 		player = document.getElementById('player'),
 		startBtn = document.querySelector('.start'),
 		sky = document.querySelector('.sky'),
@@ -115,40 +135,55 @@ document.addEventListener('DOMContentLoaded', () => {
 	document.addEventListener('keydown', keydown);
 	document.addEventListener('keyup', keyup);
 
-	const restart = () => {
+	const endGame = () => {
+		playing = false; lives = 3;
+		spawnInterval = 4000;
+		shootInterval = 2000;
+		shootIntervalMax = 4000;
+		shootIntervalMin = 1000;
+		explosionTime = 1000;
+		player.className = 'character dead';
 		document.body.classList.remove('playing');
-		playing = false;
-		lives = 3,
-		spawnInterval = 4000,
-		shootInterval = 2000,
-		shootIntervalMax = 4000,
-		shootIntervalMin = 1000,
-		explosionTime = 1000,
-		document.body.classList.add('game-over');
+		renderLives(health, lives);
+
+		for (e of document.querySelectorAll('.alien, .bomb, .explosion'))
+			e.remove();
+
+		for (int of intervals)
+			clearInterval(int);
+		intervals = [];
 	}
 
 	startBtn.addEventListener('click', e => {
+		// lives = defaultLives,
+		// level = defaultLevel,
+		// spawnInterval = defaultSpawnInterval,
+		// shootInterval = defaultShootInterval,
+		// shootIntervalMax = defaultShootIntervalMax,
+		// shootIntervalMin = defaultShootIntervalMin,
+		// explosionTime = defaultExplosionTime,
+		// bombsDodged = defaultBombsDodged,
+		// bombSpeed = defaultBombSpeed,
+		// aliensShot = defaultAliensShot,
+		// bombsDodgedElement.textContent = bombsDodged;
+		// document.body.classList.remove('game-over');
+
 		gameOver = false;
 		playing = !document.body.classList.add('playing');
-		player.classList.remove('dead', 'walk');
-		player.classList.add('character', 'stand', 'down');
+		document.body.classList.remove('game-over');
+		player.className = 'character stand down';
 		// Animate alien above sky and hide it
 		mainAlien.animate([{ transform: 'translate(-50%, -250%)' }], { duration: 500, })
 			.onfinish = () => mainAlien.classList.add('hidden');
 
-		// Blink animate the player
-		// create lives dives based on the number of lives
-		for (let i = 0; i < lives; i++)
-			health.appendChild(document.createElement('li'));
-
-		health.classList.remove('hidden');
+		renderLives(health, lives);
 		blink(health);
 		// blink(player, 600);
 
 		player.classList.add('blink');
 
 		const newAlien = (duration, takeaway = 1) => {
-			if (gameOver) return restart();
+			if (gameOver) return endGame();
 			if (spawnInterval <= 0) {
 				console.log(spawnInterval, takeaway, spawnInterval - takeaway);
 				// When the interval at which the aliens spawn has reduced down to <= 0, stop the game
@@ -169,63 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			// alien.style.setProperty('--position-y', Math.ceil(randomY) + 'px');
 			sky.appendChild(alien);
 
-			CSSAnimation: {
-				// @keyframes from-top-to-bottom-then-left-to-right-then-backup {
-				// 	0% {
-				// 		left: 0;
-				// 		top: calc(var(--position-y) -100px);
-				// 	}
-
-				// 	15% {
-				// 		left: 0;
-				// 		top: calc(var(--position-y) 100px);
-				// 	}
-
-				// 	20% {
-				// 		left: 0;
-				// 	}
-
-				// 	40% {
-				// 		top: calc(var(--position-y) + 100px);
-				// 		left: -50px
-				// 	}
-
-				// 	45% {
-				// 		left: -50px
-				// 	}
-
-				// 	65% {
-				// 		top: calc(var(--position-y) + 100px);
-				// 		left: 50px;
-				// 	}
-
-				// 	80% {
-				// 		left: 50px;
-				// 		top: calc(var(--position-y) - 100px);
-				// 	}
-
-				// 	100% {
-				// 		left: 50px;
-				// 		top: calc(var(--position-y) - 100px);
-				// 	}
-				// }
-			}
-
-			// let posiotnX1 = randomX / 2 + alien.offsetWidth, posiotnX2 = randomX / 2 + alien.offsetWidth;
-			// min = 1, max = 6 
 			let moveX = Math.ceil(Math.random() * (6 - 1) + 1),
 				posiotnX1 = randomX / moveX,
 				posiotnX2 = randomX / moveX,
 				shooting = true;
-			// make sure position is not off screen using skyWidth as a max from the left
-			// posiotnX1 = posiotnX1 > skyWidth ? skyWidth : posiotnX1;
-			// posiotnX2 = posiotnX2 > skyWidth ? skyWidth : posiotnX2;
-			// make sure position is not off screen using skyWidth as a max from the right
-			// posiotnX1 = posiotnX1 < 0 ? 0 : posiotnX1;
-			// posiotnX2 = posiotnX2 < 0 ? 0 : posiotnX2;
-
-			// let bomb = document.createElement('div');
-			// bomb.className = 'bomb';
 
 			alien.animate([
 				{ top: '-50%', left: randomX + 'px', },
@@ -250,6 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 			const shootIntervalFunc = setInterval(() => {
+				// if (gameOver) return; //!
 				const bomb = document.createElement('div');
 				bomb.className = 'bomb';
 				// bomb.style.left = randomX + 'px';
@@ -263,6 +246,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				// const randomLandX = Math.random() * skyWidth
 
 				const explode = () => {
+					// if (gameOver) return; //!
+					if (!sky.contains(bomb)) return; //!
+
 					clearInterval(shootIntervalFunc)
 					// console.log('Boom');
 					bomb?.remove();
@@ -271,6 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					explosion.className = 'explosion';
 					explosion.style.left = randomLandX + 'px';
 					explosion.style.top = randomLandY + 'px';
+					// Choose number between .5 and 1.5 to make the explosion bigger or smaller
+					explosion.style.setProperty('--scale', Math.random() * (1.5 - .5) + .5);
 					sky.appendChild(explosion);
 
 					if (
@@ -286,16 +274,25 @@ document.addEventListener('DOMContentLoaded', () => {
 						lives--;
 						if (lives <= 0) {
 							gameOver = true;
-							player.classList.add('dead');
-							player.classList.remove('walk');
-							// player.classList.remove('stand');
+							player.className = 'character dead';
 							playing = false;
 						}
 						health.lastChild && health.removeChild(health.lastChild);
 						blink(health, 2000, 6);
+						player.classList.add('hit');
+						setTimeout(() => player.classList.remove('hit'), 1000);
 
+					} else {
+						// console.log('No hit');
+						// console.log(explosion.getBoundingClientRect().top, player.getBoundingClientRect().bottom);
+						// console.log(explosion.getBoundingClientRect().bottom, player.getBoundingClientRect().top);
+						// console.log(explosion.getBoundingClientRect().left, player.getBoundingClientRect().right);
+						// console.log(explosion.getBoundingClientRect().right, player.getBoundingClientRect().left);
+						bombsDodged++;
+						bombsDodgedElement.textContent = bombsDodged;
 					}
-					setInterval(() => explosion.remove(), explosionTime);
+
+					setInterval(() => explosion?.remove(), explosionTime);
 				}
 
 				if (!shooting) return explode();
@@ -321,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			// 	shooting = false;
 			// 	// alien?.remove();
 			// }, 10000);
+			intervals.push(shootIntervalFunc);
 
 
 			// console.log(alien);
@@ -341,7 +339,8 @@ document.addEventListener('DOMContentLoaded', () => {
 	});
 
 	// spawnInterval = 2000;
-	startBtn.click();
+	// startBtn.click();
+	lives = 4
 
 	// Interval to speed up spawn rate, shoot rate, and alien speed
 	setInterval(() => {
