@@ -1,97 +1,80 @@
-// Variables of pressed keys.
-var upPressed, downPressed, leftPressed, rightPressed, lastPressed;
-
-// Arrays of arrow and WASD key codes for controlling the player.
+// Arrow and WASD key codes for controlling the player.
 const leftKeys = [37, 65],
 	rightKeys = [39, 68],
 	upKeys = [38, 87],
-	downKeys = [40, 83];
+	downKeys = [40, 83],
+	spaceKey = 32;
 
-var playing, gameOver;
+let upPressed, downPressed,
+	leftPressed, rightPressed,
+	lastPressed, lastPressedBeforeSpace,
+	spacePressed, arrowFired,
+	playing, gameOver,
+	timeout;
 
-const keyup = event => {
-	if (gameOver) return upPressed = downPressed = leftPressed = rightPressed = lastPressed = false;
-	if (leftKeys.includes(event.which))
+function keyup(event) {
+	if (gameOver || spacePressed)
+		return upPressed = downPressed = leftPressed = rightPressed = false;
+
+	if (leftKeys.includes(event.keyCode))
 		leftPressed = false,
 			lastPressed = 'left';
-	if (rightKeys.includes(event.which))
+	else if (rightKeys.includes(event.keyCode))
 		rightPressed = false,
 			lastPressed = 'right';
-	if (upKeys.includes(event.which))
+	else if (upKeys.includes(event.keyCode))
 		upPressed = false,
 			lastPressed = 'up';
-	if (downKeys.includes(event.which))
+	else if (downKeys.includes(event.keyCode))
 		downPressed = false,
 			lastPressed = 'down';
 
 	player.className = 'character stand ' + lastPressed;
-	// player.classList.add('character', 'stand', lastPressed);
 }
 
+function keydown(event) {
+	if (gameOver || spacePressed)
+		return upPressed = downPressed = leftPressed = rightPressed = false;
 
-const move = (player, skyHeight, screenWidth) => {
-	const positionLeft = player.offsetLeft;
-	const positionTop = player.offsetTop;
-
-	if (upPressed) {
-		// Don't go above the sky. 'document.elementFromPoint' is a bit buggy.
-		player.style.top = (positionTop <= skyHeight ? skyHeight : positionTop - 1) + 'px';
-
-		if (!leftPressed && !rightPressed)
-			// player.className = 'character walk up';
-			player.classList.remove('up', 'down', 'left', 'right');
-		player.classList.add('character', 'walk', 'up');
+	if (leftKeys.includes(event.keyCode)) {
+		leftPressed = leftKeys.includes(event.keyCode);
+		lastPressed = 'left';
 	}
-
-	if (downPressed) {
-		// Don't go below the map (visible screen).
-		const screenHeight = document.documentElement.clientHeight;
-		player.style.top = (positionTop >= screenHeight - player.offsetHeight ? screenHeight - player.offsetHeight : positionTop + 1) + 'px';
-
-		if (!leftPressed && !rightPressed)
-			// player.className = 'character walk down';
-			player.classList.remove('up', 'down', 'left', 'right');
-		player.classList.add('character', 'walk', 'down');
+	else if (rightKeys.includes(event.keyCode)) {
+		rightPressed = rightKeys.includes(event.keyCode);
+		lastPressed = 'right';
 	}
-
-
-
-	if (leftPressed) {
-		player.style.left = (positionLeft <= 0 ? 0 : positionLeft - 1) + 'px';
-
-		if (!upPressed && !downPressed)
-			// player.className = 'character walk left';
-			player.classList.remove('up', 'down', 'left', 'right');
-		player.classList.add('character', 'walk', 'left');
+	else if (upKeys.includes(event.keyCode)) {
+		upPressed = upKeys.includes(event.keyCode);
+		lastPressed = 'up';
 	}
-
-	if (rightPressed) {
-		player.style.left = (positionLeft >= screenWidth - player.offsetWidth ? screenWidth - player.offsetWidth : positionLeft + 1) + 'px';
-
-		if (!upPressed && !downPressed)
-			// player.className = 'character walk right';
-			player.classList.remove('up', 'down', 'left', 'right');
-		player.classList.add('character', 'walk', 'right');
+	else if (downKeys.includes(event.keyCode)) {
+		downPressed = downKeys.includes(event.keyCode);
+		lastPressed = 'down';
+	}
+	else if (spaceKey === event.keyCode) {
+		spacePressed = true;
+		lastPressedBeforeSpace = lastPressed;
 	}
 }
 
+function colliding(e, e1) {
+	const e1Left = e1.offsetLeft;
+	const e1Top = e1.offsetTop;
+	const e1Width = e1.offsetWidth;
+	const e1Height = e1.offsetHeight;
+	const eLeft = e.offsetLeft;
+	const eTop = e.offsetTop;
+	const eWidth = e.offsetWidth;
+	const eHeight = e.offsetHeight;
 
-const keydown = event => {
-	if (gameOver) return upPressed = downPressed = leftPressed = rightPressed = lastPressed = false;
-	if (leftKeys.includes(event.which))
-		leftPressed = leftKeys.includes(event.which);
-	else if (rightKeys.includes(event.which))
-		rightPressed = rightKeys.includes(event.which);
-	else if (upKeys.includes(event.which))
-		upPressed = upKeys.includes(event.which);
-	else if (downKeys.includes(event.which))
-		downPressed = downKeys.includes(event.which);
+	return e1Left < eLeft + eWidth && e1Left + e1Width > eLeft && e1Top < eTop + eHeight && e1Top + e1Height > eTop;
 }
 
 const onMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 const blink = (subject, duration = 1000, times = 3) => subject.animate(Array(times).fill([{ opacity: '.5' }, { opacity: '1' }]).flat(), { duration: duration, });
 const renderLives = (health, lives) => {
-	// create lives based on the number of lives
+	// Create lives based on the number of lives
 	health.innerHTML = '';
 	for (let i = 0; i < lives; i++)
 		health.appendChild(document.createElement('li'));
@@ -100,12 +83,10 @@ const renderLives = (health, lives) => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-	let defaultLives = 1,
+	let defaultLives = 3,
 		lives = defaultLives,
 		defaultSpawnInterval = 2000,
 		spawnInterval = defaultSpawnInterval,
-		defaultShootInterval = 1000,
-		shootInterval = defaultShootInterval,
 		defaultShootIntervalMax = 4000,
 		shootIntervalMax = defaultShootIntervalMax,
 		defaultShootIntervalMin = 1000,
@@ -117,9 +98,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		defaultBombsDodged = 0,
 		bombsDodged = defaultBombsDodged,
 		bombsDodgedElement = document.getElementById('dodged'),
-		defaultAliensShot = 0,
-		aliensShot = defaultAliensShot,
-		aliensShotElement = document.getElementById('shot'),
+		defaultbombsShot = 0,
+		bombsShot = defaultbombsShot,
+		bombsShotElement = document.getElementById('shot'),
 		defaultLevel = 1,
 		level = defaultLevel,
 		levelingInterval = 5000,
@@ -130,13 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
 		sky = document.querySelector('.sky'),
 		skyHeight = sky.offsetHeight,
 		skyWidth = sky.offsetWidth,
-		timeout = setInterval(move, 10, player, skyHeight, skyWidth),
+		docHeight = document.documentElement.clientHeight,
+		groundHeight = docHeight - sky.offsetHeight,
 		health = document.querySelector('.health'),
 		mainAlien = document.querySelector('.alien.main'),
 		nameInput = document.getElementById('name'),
 		nameLabel = document.querySelector('label[for="name"]'),
 		nameLabelAltered = false;
 
+	timeout = setInterval(move, 10, { player, skyHeight, skyWidth, groundHeight, docHeight, bombsShot, bombsShotElement });
 	document.querySelector('.info p').addEventListener('click', () => alert(`
 		Information:
 
@@ -166,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		// Add level, bombs dodged, and aliens shot local storage.
 		localStorage.setItem('board', JSON.stringify({
 			...(JSON.parse(localStorage.getItem('board')) || {}),
-			[nameInput.value]: { level, bombsDodged, aliensShot },
+			[nameInput.value]: { level, bombsDodged, bombsShot },
 		}));
 
 		nameInput.value = '';
@@ -207,6 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		shootIntervalMax = 4000;
 		shootIntervalMin = 1000;
 		explosionTime = 1000;
+		bombsShot = +bombsShotElement.textContent;
 		player.className = 'character dead';
 
 		nameInput.classList.remove('hidden');
@@ -217,7 +201,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		if (!onMobile()) {
 			document.body.classList.add('pc');
-			nameInput.focus();
+			// Wait 1.5 seconds as plyer might still be holding a WASD key.
+			setTimeout(() => nameInput.focus(), 1500);
 		}
 
 		// player.classList.remove('stand', 'walk', 'up', 'down', 'left', 'right');
@@ -230,19 +215,19 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	startBtn.addEventListener('click', e => {
-		// lives = defaultLives,
+		lives = defaultLives;
 		level = defaultLevel;
-		// spawnInterval = defaultSpawnInterval;
-		// shootInterval = defaultShootInterval;
-		// shootIntervalMax = defaultShootIntervalMax;
-		// shootIntervalMin = defaultShootIntervalMin;
-		// explosionTime = defaultExplosionTime;
-		// bombsDodged = defaultBombsDodged;
-		// bombSpeed = defaultBombSpeed;
-		// aliensShot = defaultAliensShot;
+		spawnInterval = defaultSpawnInterval;
+		shootIntervalMax = defaultShootIntervalMax;
+		shootIntervalMin = defaultShootIntervalMin;
+		explosionTime = defaultExplosionTime;
+		bombsDodged = defaultBombsDodged;
+		bombSpeed = defaultBombSpeed;
 		bombsDodgedElement.textContent = bombsDodged;
 		levelElement.textContent = level;
 		nameLabelAltered = false;
+		bombsShot = defaultbombsShot;
+		bombsShotElement.textContent = defaultbombsShot;
 		gameOver = false;
 		document.body.classList.remove('game-over');
 		playing = !document.body.classList.add('playing');
@@ -274,16 +259,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 			setTimeout(newAlien, spawnInterval);
 			const alien = document.createElement('div');
-
-
-			// Spawn alien inside the sky
-			// const randomY = Math.random() * (skyHeight - alien.offsetHeight) + 'px';
 			const randomY = Math.random() * (skyHeight - skyHeight / 2 - alien.offsetHeight);
 			const randomX = Math.random() * (skyWidth - alien.offsetWidth);
 			alien.style.left = randomX + 'px';
 			alien.style.top = randomY;
 			alien.className = 'alien';
-			// alien.style.setProperty('--position-y', Math.ceil(randomY) + 'px');
 			sky.appendChild(alien);
 
 			let moveX = Math.ceil(Math.random() * (6 - 1) + 1),
@@ -291,48 +271,36 @@ document.addEventListener('DOMContentLoaded', () => {
 				posiotnX2 = randomX / moveX,
 				shooting = true;
 
+			// Whether the alien should go from left then right, or vice versa.
+			const leftFirst = Math.random() >= .5;
 			alien.animate([
 				{ top: '-50%', left: randomX + 'px', },
 				{ top: randomY + 'px', /* left: randomX + 'px', */ offset: .15, },
 				{ top: randomY + 'px', left: randomX + 'px', offset: .2, },
-				{ top: randomY + 'px', left: randomX - posiotnX1 + 'px', offset: .4, },
-				{ top: randomY + 'px', left: randomX - posiotnX1 + 'px', offset: .45, },
-				{ top: randomY + 'px', left: randomX + posiotnX2 + 'px', offset: .65, },
-				{ top: randomY + 'px', left: randomX + posiotnX2 + 'px', offset: .8, },
-				{ top: '-100%', left: randomX + posiotnX2 + 'px', offset: 1, }
-			],
-				{ duration: 10000, easing: 'linear' })
+				{ top: randomY + 'px', left: (leftFirst ? randomX - posiotnX1 : randomX + posiotnX2) + 'px', offset: .4, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX - posiotnX1 : randomX + posiotnX2) + 'px', offset: .45, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: .65, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: .8, },
+				{ top: '-100%', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: 1, }
+			], { duration: 10000, easing: 'linear' })
 				.onfinish = () => {
-					// console.log('done');
 					shooting = false;
-					// console.log(bomb);
 					alien?.remove();
-					// bomb?.remove();
 				}
 
 
-
-
 			const shootIntervalFunc = setInterval(() => {
-				// if (gameOver) return; //!
 				const bomb = document.createElement('div');
 				bomb.className = 'bomb';
-				// bomb.style.left = randomX + 'px';
-				// bomb.style.top = randomY + 'px';
 				sky.appendChild(bomb);
 
-				// Pick random place below the sky to shoot the bullet
-				// const randomLandY = Math.random() * (sky.offsetHeight + Math.random() * sky.offsetHeight);
 				const randomLandY = sky.offsetHeight + (Math.random() * (document.documentElement.clientHeight - sky.offsetHeight));
 				const randomLandX = Math.random() * (sky.offsetWidth - bomb.offsetWidth);
-				// const randomLandX = Math.random() * skyWidth
 
 				const explode = () => {
-					// if (gameOver) return; //!
-					if (!sky.contains(bomb)) return; //!
+					if (!sky.contains(bomb)) return;
 
 					clearInterval(shootIntervalFunc)
-					// console.log('Boom');
 					bomb?.remove();
 
 					const explosion = document.createElement('div');
@@ -343,33 +311,20 @@ document.addEventListener('DOMContentLoaded', () => {
 					explosion.style.setProperty('--scale', Math.random() * (1.5 - .5) + .5);
 					sky.appendChild(explosion);
 
-					if (
-						// Detect if player is near explosion
-						explosion.getBoundingClientRect().top < player.getBoundingClientRect().bottom &&
-						explosion.getBoundingClientRect().bottom > player.getBoundingClientRect().top &&
-						explosion.getBoundingClientRect().left < player.getBoundingClientRect().right &&
-						explosion.getBoundingClientRect().right > player.getBoundingClientRect().left
-
-					) {
-						if (!gameOver) console.log('Game Over');
-						// remove one life.
+					if (colliding(player, explosion)) {
+						!gameOver && console.log('Game Over');
 						lives--;
 						if (lives <= 0) {
 							gameOver = true;
 							player.className = 'character dead';
 							playing = false;
 						}
+
 						health.lastChild && health.removeChild(health.lastChild);
 						blink(health, 2000, 6);
 						player.classList.add('hit');
 						setTimeout(() => player.classList.remove('hit'), 1000);
-
 					} else {
-						// console.log('No hit');
-						// console.log(explosion.getBoundingClientRect().top, player.getBoundingClientRect().bottom);
-						// console.log(explosion.getBoundingClientRect().bottom, player.getBoundingClientRect().top);
-						// console.log(explosion.getBoundingClientRect().left, player.getBoundingClientRect().right);
-						// console.log(explosion.getBoundingClientRect().right, player.getBoundingClientRect().left);
 						bombsDodged++;
 						bombsDodgedElement.textContent = bombsDodged;
 					}
@@ -377,40 +332,30 @@ document.addEventListener('DOMContentLoaded', () => {
 					setInterval(() => explosion?.remove(), explosionTime);
 				}
 
-				if (!shooting) return explode();
+				if (!shooting)
+					return explode();
 
 				bomb.animate([
 					{ top: alien.offsetTop + alien.offsetHeight + 'px', left: alien.offsetLeft + alien.offsetWidth / 2 - 15 + 'px', },
-					// Make sure top doesn't go off screen
 					{ top: randomLandY + 'px', left: randomLandX + 'px' },
-					// { top: randomLandY + 'px', left: randomLandX + 'px', },
 				], { duration: bombSpeed, easing: 'linear' })
 					.onfinish = explode
 
-				// The bomb is currently facing down, make sure the bomb is facing where the x position is using Math.atan2
+				// The bomb is currently facing down, make the bomb face where the x & y position is using Math.atan2
 				const angle = Math.atan2(randomLandY - alien.offsetTop - alien.offsetHeight / 2, randomLandX - alien.offsetLeft - alien.offsetWidth / 2);
 				bomb.style.transform = `rotate(${angle}rad)`;
 
-				// }, shootInterval);
 			}, Math.ceil(Math.random() * (shootIntervalMax - shootIntervalMin) + shootIntervalMin));
-			// const shootIntervalFunc = setInterval(shoot, Math.ceil(Math.random() * (shootIntervalMax - shootIntervalMin) + shootIntervalMin));
 
-			// setTimeout(() => {
-			// 	// clearInterval(shootIntervalFunc);
-			// 	shooting = false;
-			// 	// alien?.remove();
-			// }, 10000);
 			intervals.push(shootIntervalFunc);
 		}
 
 		newAlien(0);
 	});
 
-	// spawnInterval = 2000;
-	// startBtn.click();
-
 	// Interval to speed up spawn rate, shoot rate, and alien speed
-	function startBackgroundWork() {
+	const startBackgroundWork = () => {
+		console.log('Starting background work');
 		intervals.push(
 			// Interval to change level
 			setInterval(() => {
@@ -423,10 +368,11 @@ document.addEventListener('DOMContentLoaded', () => {
 			setInterval(() => {
 				if (gameOver) return;
 				// Speed up everything as the level goes up
-				bombSpeed -= 1;
-				spawnInterval -= 1;
-				shootInterval -= 1;
-				shootIntervalMax -= 1;
+				bombSpeed--;
+				spawnInterval--;
+				shootInterval--;
+				shootIntervalMax--;
+
 				if (shootIntervalMax < shootIntervalMin) {
 					shootIntervalMax = 1000;
 					shootIntervalMin = 0;
@@ -435,9 +381,93 @@ document.addEventListener('DOMContentLoaded', () => {
 		);
 	}
 
-	function stopBackgroundWork() {
+	const stopBackgroundWork = () => {
 		for (const interval of intervals)
 			clearInterval(interval);
 		intervals = [];
 	}
 });
+
+function move({ player, skyHeight, skyWidth: screenWidth, groundHeight, docHeight, bombsShot, bombsShotElement }) {
+	const positionLeft = player.offsetLeft;
+	const positionTop = player.offsetTop;
+
+	if (upPressed) {
+		// Don't go above the sky. 'document.elementFromPoint' is a bit buggy.
+		player.style.top = (positionTop <= skyHeight ? skyHeight : positionTop - 1) + 'px';
+		player.className = 'character walk up';
+	}
+
+	if (downPressed) {
+		// Don't go below the map (visible screen).
+		const screenHeight = document.documentElement.clientHeight;
+		player.style.top = (positionTop >= screenHeight - player.offsetHeight ? screenHeight - player.offsetHeight : positionTop + 1) + 'px';
+		player.className = 'character walk down';
+	}
+
+	if (leftPressed) {
+		player.style.left = (positionLeft <= 0 ? 0 : positionLeft - 1) + 'px';
+		player.className = 'character walk left';
+	}
+
+	if (rightPressed) {
+		player.style.left = (positionLeft >= screenWidth - player.offsetWidth ? screenWidth - player.offsetWidth : positionLeft + 1) + 'px';
+		player.className = 'character walk right';
+	}
+
+	if (spacePressed) {
+		player.className = `character stand ${lastPressed} fire`;
+		if (!arrowFired) {
+			arrowFired = true;
+			const arrow = document.createElement('div');
+			arrow.className = 'arrow';
+			// Make arrow face where the last pressed was
+			arrow.style.transform = `rotate(${lastPressed == 'right' ? 0 : lastPressed == 'left' ? 180 : -90}deg)`;
+			arrow.style.top = player.offsetTop + player.offsetHeight / 2 - arrow.offsetHeight / 2 + 'px';
+			arrow.style.left = player.offsetLeft + player.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
+			document.body.appendChild(arrow);
+
+			// Arrow animation (no easing)
+			const pressedBefore = lastPressed;
+			const arrowInterval = setInterval(() => {
+				// Mave arrow based on last pressed until off screen.
+				if (pressedBefore == 'up')
+					arrow.style.top = arrow.offsetTop - 5 + 'px';
+				else if (pressedBefore == 'down')
+					arrow.style.top = arrow.offsetTop + 5 + 'px';
+				else if (pressedBefore == 'left')
+					arrow.style.left = arrow.offsetLeft - 5 + 'px';
+				else if (pressedBefore == 'right')
+					arrow.style.left = arrow.offsetLeft + 5 + 'px';
+
+				// Arrow is off screen
+				if (arrow.offsetTop <= 0 || arrow.offsetTop >= docHeight || arrow.offsetLeft <= 0 || arrow.offsetLeft >= screenWidth) {
+					console.log('off screen');
+					arrow?.remove();
+					clearInterval(arrowInterval);
+					// arrowFired = false;
+				}
+
+				// Arrow hits a bomb
+				const bomb = document.elementFromPoint(arrow.offsetLeft + arrow.offsetWidth / 2, arrow.offsetTop + arrow.offsetHeight / 2);
+				if (arrow && bomb?.classList.contains('bomb')) {
+					bomb?.remove();
+					arrow?.remove();
+					bombsShot++; // TODO
+					bombsShotElement.textContent = +bombsShotElement.textContent + bombsShot;
+					clearInterval(arrowInterval);
+				}
+			});
+		}
+
+		setTimeout(() => {
+			spacePressed = false;
+			arrowFired = false;
+			// if (lastPressedBeforeSpace === 'up') upPressed = true;
+			// else if (lastPressedBeforeSpace === 'down') downPressed = true;
+			// else if (lastPressedBeforeSpace === 'left') leftPressed = true;
+			// else if (lastPressedBeforeSpace === 'right') rightPressed = true;
+			player.classList.remove('fire');
+		}, 500);
+	}
+}

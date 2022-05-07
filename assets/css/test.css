@@ -12,16 +12,13 @@ body {
 
 }
 
-/* .hud {
-    pointer-events: none;
-} */
-
 .bomb {
     z-index: 1;
 }
 
 .character {
     left: 49%;
+    /* left: 97%; */
 }
 
 .alien {
@@ -66,25 +63,28 @@ body {
 
 @keyframes scaleOut {
     0% {
-        display: var(--display, block);
+        /* display: var(--display, block); */
         /* transform: translate(-50%, -50%) scale(1); */
         transform: scale(1);
     }
 
     50% {
-        display: var(--display, block);
+        /* display: var(--display, block); */
         /* transform: translate(-50%, -50%) scale(0); */
         transform: scale(0);
+        filter: blur(10px);
     }
 
     100% {
-        display: none;
+        pointer-events: none;
+        /* display: none; */
         /* transform: translate(-50%, -50%) scale(0); */
         transform: scale(0);
     }
 }
 
-body.playing .start {
+body.playing .start,
+body.playing .center .info {
     animation: scaleOut .5s forwards;
 }
 
@@ -167,11 +167,6 @@ body.playing .start {
     }
 }
 
-.screen .board {
-    /* animation: boardAn 1.5s ease; */
-    /* margin-top: 50px; */
-}
-
 @keyframes hudsAn {
     from {
         opacity: 0;
@@ -183,7 +178,7 @@ body.playing .start {
 body.game-over :is(.start #start, .hud),
 body:not(.game-over) :is(.start #again, .end),
 body.playing .screen .board,
-body.playing .center .info,
+/* body.playing .center .info, */
 /* body:not(.playing) .screen .levels */
 body:not(.playing) :is(.hud) {
     display: none;
@@ -193,15 +188,6 @@ body:not(.playing) :is(.hud) {
     cursor: pointer;
 }
 
-/* table tr :is(th, td):not(:last-child) {
-    border-right: 1px solid #ccccccd9;
-}
-
-table tr :is(th, td)~:is(th, td) {
-    padding-left: 10px;
-} */
-
-/* table tr:nth-child(even), */
 thead {
     background-color: #cccccc26;
 }
@@ -214,10 +200,7 @@ table tr td:last-of-type {
     animation: hudsAn 1s ease;
 }
 
-table,
-th,
-td {
-    /* border: 1px solid #cccccc; */
+table, th, td {
     border-collapse: collapse;
     border-spacing: 0 1rem;
     padding: .3em .1em;
@@ -226,27 +209,10 @@ td {
 caption {
     font-size: 1.5em;
     font-weight: bold;
-    /* text-align: left; */
     padding-bottom: .4em;
 }
 
-thead {
-
-    /* font-family: 'Anton'; */
-    /* font-weight: bolder; */
-    /* font-size: 1.1rem; */
-}
-
-th,
-td {
-    /* padding: 15px; */
-    /* text-align: left; */
-}
-
 table {
-    /* border-collapse: collapse; */
-    /* border-collapse: separate; */
-    /* border-spacing: 0 16px; */
     min-width: 200px;
 }
 
@@ -258,13 +224,7 @@ table * {
     margin: 0;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-caption {
+h1, h2, h3, h4, h5, h6, caption {
     margin: 0;
     font-family: 'Anton';
 }
@@ -284,6 +244,7 @@ caption {
     align-self: center;
     animation: deadTextAn 2s ease;
     font-size: 2.5rem;
+    text-transform: uppercase;
 }
 
 @keyframes deadAn {
