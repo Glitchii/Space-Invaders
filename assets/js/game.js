@@ -47,6 +47,20 @@ function keydown(event) {
 		spacePressed = true;
 }
 
+function createExplosion(x, y, scale = 1, explosionTime = 1000) {
+	// const explode =
+	const explosion = document.createElement('div');
+	explosion.className = 'explosion';
+	explosion.style.left = x + 'px';
+	explosion.style.top = y + 'px';
+	// Choose number between .5 and 1.5 to make the explosion bigger or smaller
+	explosion.style.setProperty('--scale', scale);
+	document.body.appendChild(explosion);
+
+	setInterval(() => explosion?.remove(), explosionTime);
+	return explosion;
+}
+
 function colliding(e, e1) {
 	const e1Left = e1.offsetLeft;
 	const e1Top = e1.offsetTop;
@@ -224,25 +238,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
 				const randomLandY = sky.offsetHeight + (Math.random() * (document.documentElement.clientHeight - sky.offsetHeight));
 				const randomLandX = Math.random() * (sky.offsetWidth - bomb.offsetWidth);
-
+				
 				const explode = () => {
 					if (!sky.contains(bomb)) return;
 
 					clearInterval(shootIntervalFunc)
 					bomb?.remove();
 
-					const explosion = document.createElement('div');
-					explosion.className = 'explosion';
-					explosion.style.left = randomLandX + 'px';
-					explosion.style.top = randomLandY + 'px';
-					// Choose number between .5 and 1.5 to make the explosion bigger or smaller
-					explosion.style.setProperty('--scale', Math.random() * (1.5 - .5) + .5);
-					sky.appendChild(explosion);
+					const explosion = createExplosion(randomLandX, randomLandY, Math.random() * (1.5 - .5) + .5);
 
 					if (colliding(player, explosion)) {
 						lives--;
-						if (lives <= 0)
-							gameOver = true, player.className = 'character dead';
+						if (lives <= 0) {
+							gameOver = true, player.className = 'character stand dead';
+							return endGame();
+						}
 
 						playerHit = true;
 						player.classList.add('hit');
@@ -303,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function endGame() {
-		player.className = 'character dead';
+		player.className = 'character stand dead';
 		nameLabel.textContent = nameLabel.dataset.text;
 		nameInput.classList.remove('hidden');
 		startBtn.classList.remove('hidden');
@@ -414,11 +424,12 @@ function move({ player, skyHeight, skyWidth: screenWidth, docHeight, bombsShotEl
 					clearInterval(arrowInterval);
 				}
 
-				// Arrow hits a bomb
+				// Arrow hits a bomb or alien ship.
 				const bomb = document.elementFromPoint(arrow.offsetLeft + arrow.offsetWidth / 2, arrow.offsetTop + arrow.offsetHeight / 2);
 				if (arrow && bomb?.classList.contains('bomb')) {
-					bomb?.remove();
 					arrow?.remove();
+					bomb.classList.add('exploded');
+					setTimeout(() => bomb?.remove(), 500);
 					bombsShotElement.textContent = ++bombsShotElement.textContent;
 					clearInterval(arrowInterval);
 				}

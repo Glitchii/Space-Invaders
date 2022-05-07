@@ -31,6 +31,12 @@ html, body {
     transform: translate(var(--x), -150%);
 }
 
+@keyframes fadeOut{
+    to {
+        opacity: 0;
+    }
+}
+
 @keyframes mainShipAn {
     0% {
         transform: translate(var(--x), 100%);
@@ -272,4 +278,36 @@ body.game-over .center {
 .center .info p:hover {
     text-decoration: underline;
     text-underline-offset: 4px;
+}
+
+.exploded {
+    animation: fadeOut .5s forwards;
+}
+.exploded::before, .exploded::after {
+	z-index: 999;
+	width: 128px;
+	height: 32px;
+	display: block;
+	content: " ";
+	background-image: url(/assets/imgs/bomb1.png);
+	background-position: 0 -192px;
+    /* background: url(/assets/imgs/bomb1.png) 0 -192px; */
+	animation: bombH .5s steps(1) infinite;
+}
+
+.exploded::after {
+	width: 32px;
+	height: 160px;
+	margin-top: -100px;
+	margin-left: 48px;
+	background-position: 0px -32px;
+	animation-name: boomV;
+}
+
+.bomb.exploded::before {
+    transform: scale(.2) translate(-218px, -50px);
+}
+
+.bomb.exploded::after {
+    transform: scale(.2) translate(-218px, -35px);
 }
