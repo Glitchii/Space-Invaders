@@ -1,12 +1,12 @@
-html,
-body {
+@import url(/assets/css/game.css);
+
+html, body {
     width: 100%;
     height: 100%;
 }
 
 * {
     margin: 0;
-    padding: 0;
     box-sizing: border-box;
     color: #fff;
 
@@ -18,69 +18,46 @@ body {
 
 .character {
     left: 49%;
-    /* left: 97%; */
 }
 
 .alien {
     transform: rotate(180deg);
     z-index: 1;
 }
+.alien.main {
+    transform: none;
+    /* Slowly move alien ship up and down forever */
+    animation: mainShipAn 100s ease-out infinite;
+    transform: translate(var(--x), -150%);
+}
 
-
-/* Slowly move alien up forever */
-@keyframes alien-move-up-and-down {
+@keyframes mainShipAn {
     0% {
         transform: translate(var(--x), 100%);
-    }
-
-    10% {
+    } 10% {
         transform: translate(var(--x), 0);
-    }
-
-    50% {
+    } 50% {
         transform: translate(var(--x), -120%);
-    }
-
-    51% {
+    } 51% {
         transform: translate(var(--x), -120%) rotate(180deg);
-    }
-
-    99% {
+    } 99% {
         transform: translate(var(--x), 100%) rotate(180deg);
-    }
-
-    100% {
+    } 100% {
         transform: translate(var(--x), 100%) rotate(0deg);
     }
 }
 
-.alien.main {
-    transform: none;
-    /* Slowly move alien up forever */
-    animation: alien-move-up-and-down 100s ease-out infinite;
-    transform: translate(var(--x), -150%);
-}
 
 @keyframes scaleOut {
     0% {
-        /* display: var(--display, block); */
-        /* transform: translate(-50%, -50%) scale(1); */
         transform: scale(1);
-    }
-
-    50% {
-        /* display: var(--display, block); */
-        /* transform: translate(-50%, -50%) scale(0); */
+    } 50% {
         transform: scale(0);
         filter: blur(10px);
-    }
-
-    100% {
+    } 100% {
         pointer-events: none;
-        /* display: none; */
-        /* transform: translate(-50%, -50%) scale(0); */
         transform: scale(0);
-    }
+    } 
 }
 
 body.playing .start,
@@ -155,18 +132,6 @@ body.playing .center .info {
 
 }
 
-@keyframes boardAn {
-    0% {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-
-    50% {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-}
-
 @keyframes hudsAn {
     from {
         opacity: 0;
@@ -182,10 +147,6 @@ body.playing .screen .board,
 /* body:not(.playing) .screen .levels */
 body:not(.playing) :is(.hud) {
     display: none;
-}
-
-.pointer {
-    cursor: pointer;
 }
 
 thead {
@@ -270,7 +231,6 @@ h1, h2, h3, h4, h5, h6, caption {
 }
 
 .inputs label {
-    /* display: block; */
     margin-right: 10px;
 }
 
@@ -305,6 +265,7 @@ body.game-over .center {
 
 .center .info p {
     font-size: 80%;
+    cursor: pointer;
     text-shadow: 2px 2px 2px #000;
 }
 

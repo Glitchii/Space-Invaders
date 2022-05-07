@@ -7,55 +7,44 @@ const leftKeys = [37, 65],
 
 let upPressed, downPressed,
 	leftPressed, rightPressed,
-	lastPressed, lastPressedBeforeSpace,
-	spacePressed, arrowFired,
-	playing, gameOver,
-	timeout;
+	lastPressed, spacePressed,
+	arrowFired, gameOver,
+	timeout, playerHit;
 
 function keyup(event) {
-	if (gameOver || spacePressed)
+	if (gameOver)
 		return upPressed = downPressed = leftPressed = rightPressed = false;
 
 	if (leftKeys.includes(event.keyCode))
-		leftPressed = false,
-			lastPressed = 'left';
+		leftPressed = false;
 	else if (rightKeys.includes(event.keyCode))
-		rightPressed = false,
-			lastPressed = 'right';
+		rightPressed = false;
 	else if (upKeys.includes(event.keyCode))
-		upPressed = false,
-			lastPressed = 'up';
+		upPressed = false;
 	else if (downKeys.includes(event.keyCode))
-		downPressed = false,
-			lastPressed = 'down';
+		downPressed = false;
 
 	player.className = 'character stand ' + lastPressed;
 }
 
 function keydown(event) {
-	if (gameOver || spacePressed)
+	if (gameOver)
 		return upPressed = downPressed = leftPressed = rightPressed = false;
 
-	if (leftKeys.includes(event.keyCode)) {
-		leftPressed = leftKeys.includes(event.keyCode);
-		lastPressed = 'left';
-	}
-	else if (rightKeys.includes(event.keyCode)) {
-		rightPressed = rightKeys.includes(event.keyCode);
-		lastPressed = 'right';
-	}
-	else if (upKeys.includes(event.keyCode)) {
-		upPressed = upKeys.includes(event.keyCode);
-		lastPressed = 'up';
-	}
-	else if (downKeys.includes(event.keyCode)) {
-		downPressed = downKeys.includes(event.keyCode);
-		lastPressed = 'down';
-	}
-	else if (spaceKey === event.keyCode) {
+	else if (leftKeys.includes(event.keyCode))
+		leftPressed = leftKeys.includes(event.keyCode),
+			lastPressed = 'left';
+	else if (rightKeys.includes(event.keyCode))
+		rightPressed = rightKeys.includes(event.keyCode),
+			lastPressed = 'right';
+	else if (upKeys.includes(event.keyCode))
+		upPressed = upKeys.includes(event.keyCode),
+			lastPressed = 'up';
+	else if (downKeys.includes(event.keyCode))
+		downPressed = downKeys.includes(event.keyCode),
+			lastPressed = 'down';
+	else if (spaceKey === event.keyCode)
 		spacePressed = true;
-		lastPressedBeforeSpace = lastPressed;
-	}
 }
 
 function colliding(e, e1) {
@@ -98,12 +87,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		defaultBombsDodged = 0,
 		bombsDodged = defaultBombsDodged,
 		bombsDodgedElement = document.getElementById('dodged'),
-		defaultbombsShot = 0,
-		bombsShot = defaultbombsShot,
 		bombsShotElement = document.getElementById('shot'),
 		defaultLevel = 1,
 		level = defaultLevel,
-		levelingInterval = 5000,
+		levelingInterval = 15000,
 		levelElement = document.getElementById('level'),
 		intervals = [],
 		player = document.getElementById('player'),
@@ -112,14 +99,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		skyHeight = sky.offsetHeight,
 		skyWidth = sky.offsetWidth,
 		docHeight = document.documentElement.clientHeight,
-		groundHeight = docHeight - sky.offsetHeight,
 		health = document.querySelector('.health'),
 		mainAlien = document.querySelector('.alien.main'),
 		nameInput = document.getElementById('name'),
-		nameLabel = document.querySelector('label[for="name"]'),
-		nameLabelAltered = false;
+		nameLabel = document.querySelector('label[for=name]'),
+		nameLabelAltered;
 
-	timeout = setInterval(move, 10, { player, skyHeight, skyWidth, groundHeight, docHeight, bombsShot, bombsShotElement });
+	timeout = setInterval(move, 10, { player, skyHeight, skyWidth, docHeight, bombsShotElement });
 	document.querySelector('.info p').addEventListener('click', () => alert(`
 		Information:
 
@@ -139,17 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	nameInput.addEventListener('input', () => {
 		if (nameLabelAltered) return;
-		console.log('input');
 		nameLabel.textContent = 'Press enter to submit';
 		nameLabelAltered = true;
 	})
 
-	nameInput.addEventListener('keydown', event => {
-		if (event.key !== 'Enter') return;
+	nameInput.addEventListener('keydown', e => {
+		if (e.key !== 'Enter') return;
 		// Add level, bombs dodged, and aliens shot local storage.
 		localStorage.setItem('board', JSON.stringify({
 			...(JSON.parse(localStorage.getItem('board')) || {}),
-			[nameInput.value]: { level, bombsDodged, bombsShot },
+			[nameInput.value]: { level, bombsDodged, bombsShot: +bombsShotElement.textContent },
 		}));
 
 		nameInput.value = '';
@@ -158,61 +143,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		renderBoard();
 	});
-
-	function renderBoard() {
-		const board = JSON.parse(localStorage.getItem('board')) || {};
-		const tbody = document.querySelector('.board table tbody');
-		tbody.innerHTML = '';
-
-		for (const name of Object.keys(board).sort((a, b) => board[b].level - board[a].level)) {
-			const tr = document.createElement('tr');
-			const td1 = document.createElement('td'),
-				td2 = document.createElement('td'),
-				td3 = document.createElement('td');
-
-			td1.textContent = name;
-			td2.textContent = board[name].level;
-			td3.textContent = board[name].bombsDodged;
-
-			tr.appendChild(td1);
-			tr.appendChild(td2);
-			tr.appendChild(td3);
-
-			tbody.appendChild(tr);
-		}
-	}
-
-
-	const endGame = () => {
-		playing = false; lives = 1;
-		spawnInterval = 4000;
-		shootInterval = 2000;
-		shootIntervalMax = 4000;
-		shootIntervalMin = 1000;
-		explosionTime = 1000;
-		bombsShot = +bombsShotElement.textContent;
-		player.className = 'character dead';
-
-		nameInput.classList.remove('hidden');
-		nameLabel.textContent = nameLabel.dataset.text;
-		document.body.classList.add('game-over');
-		document.body.classList.remove('playing');
-		startBtn.classList.remove('hidden');
-
-		if (!onMobile()) {
-			document.body.classList.add('pc');
-			// Wait 1.5 seconds as plyer might still be holding a WASD key.
-			setTimeout(() => nameInput.focus(), 1500);
-		}
-
-		// player.classList.remove('stand', 'walk', 'up', 'down', 'left', 'right');
-		// renderLives(health, lives);
-
-		for (e of document.querySelectorAll('.alien, .bomb, .explosion'))
-			e.remove();
-
-		stopBackgroundWork();
-	}
 
 	startBtn.addEventListener('click', e => {
 		lives = defaultLives;
@@ -226,15 +156,13 @@ document.addEventListener('DOMContentLoaded', () => {
 		bombsDodgedElement.textContent = bombsDodged;
 		levelElement.textContent = level;
 		nameLabelAltered = false;
-		bombsShot = defaultbombsShot;
-		bombsShotElement.textContent = defaultbombsShot;
 		gameOver = false;
-		document.body.classList.remove('game-over');
-		playing = !document.body.classList.add('playing');
+		document.body.classList.add('playing');
 		player.className = 'character stand down';
 
 		setTimeout(() => startBtn.classList.add('hidden'), 3000);
 		document.body.classList.remove('pc');
+		document.body.classList.remove('game-over');
 
 		// Start counting levels, bombs dodged, aliens shot etc.
 		startBackgroundWork();
@@ -249,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		player.classList.add('blink');
 
-		const newAlien = (duration, takeaway = 1) => {
+		const newAlien = (takeaway = 1) => {
 			if (gameOver) return endGame();
 			if (spawnInterval <= 0) {
 				console.log(spawnInterval, takeaway, spawnInterval - takeaway);
@@ -312,18 +240,16 @@ document.addEventListener('DOMContentLoaded', () => {
 					sky.appendChild(explosion);
 
 					if (colliding(player, explosion)) {
-						!gameOver && console.log('Game Over');
 						lives--;
-						if (lives <= 0) {
-							gameOver = true;
-							player.className = 'character dead';
-							playing = false;
-						}
+						if (lives <= 0)
+							gameOver = true, player.className = 'character dead';
 
-						health.lastChild && health.removeChild(health.lastChild);
-						blink(health, 2000, 6);
+						playerHit = true;
 						player.classList.add('hit');
-						setTimeout(() => player.classList.remove('hit'), 1000);
+						blink(player, 2000);
+						blink(health, 2000, 6);
+						health.lastChild && health.removeChild(health.lastChild);
+						setTimeout(() => playerHit = player.classList.remove('hit'), 1000);
 					} else {
 						bombsDodged++;
 						bombsDodgedElement.textContent = bombsDodged;
@@ -350,12 +276,54 @@ document.addEventListener('DOMContentLoaded', () => {
 			intervals.push(shootIntervalFunc);
 		}
 
-		newAlien(0);
+		newAlien();
 	});
 
+	function renderBoard() {
+		const board = JSON.parse(localStorage.getItem('board')) || {};
+		const tbody = document.querySelector('.board table tbody');
+
+		tbody.innerHTML = '';
+		for (const name of Object.keys(board).sort((a, b) => board[b].level - board[a].level)) {
+			const tr = document.createElement('tr'),
+				td1 = document.createElement('td'),
+				td2 = document.createElement('td'),
+				td3 = document.createElement('td');
+
+			td1.textContent = name;
+			td2.textContent = board[name].level;
+			td3.textContent = board[name].bombsDodged;
+
+			tr.appendChild(td1);
+			tr.appendChild(td2);
+			tr.appendChild(td3);
+
+			tbody.appendChild(tr);
+		}
+	}
+
+	function endGame() {
+		player.className = 'character dead';
+		nameLabel.textContent = nameLabel.dataset.text;
+		nameInput.classList.remove('hidden');
+		startBtn.classList.remove('hidden');
+		document.body.classList.add('game-over');
+		document.body.classList.remove('playing');
+
+		if (!onMobile()) {
+			document.body.classList.add('pc');
+			// Wait 1.5 seconds as plyer might still be holding a WASD key.
+			setTimeout(() => nameInput.focus(), 1500);
+		}
+
+		for (e of document.querySelectorAll('.alien, .bomb, .explosion'))
+			e.remove();
+
+		stopBackgroundWork();
+	}
+
 	// Interval to speed up spawn rate, shoot rate, and alien speed
-	const startBackgroundWork = () => {
-		console.log('Starting background work');
+	function startBackgroundWork() {
 		intervals.push(
 			// Interval to change level
 			setInterval(() => {
@@ -370,49 +338,51 @@ document.addEventListener('DOMContentLoaded', () => {
 				// Speed up everything as the level goes up
 				bombSpeed--;
 				spawnInterval--;
-				shootInterval--;
 				shootIntervalMax--;
 
-				if (shootIntervalMax < shootIntervalMin) {
-					shootIntervalMax = 1000;
-					shootIntervalMin = 0;
-				}
+				if (shootIntervalMax < shootIntervalMin)
+					shootIntervalMax = 1000, shootIntervalMin = 0;
 			}, 1000),
 		);
 	}
 
-	const stopBackgroundWork = () => {
+	function stopBackgroundWork() {
 		for (const interval of intervals)
 			clearInterval(interval);
 		intervals = [];
 	}
 });
 
-function move({ player, skyHeight, skyWidth: screenWidth, groundHeight, docHeight, bombsShot, bombsShotElement }) {
+function move({ player, skyHeight, skyWidth: screenWidth, docHeight, bombsShotElement }) {
 	const positionLeft = player.offsetLeft;
 	const positionTop = player.offsetTop;
+	const screenHeight = document.documentElement.clientHeight;
 
-	if (upPressed) {
-		// Don't go above the sky. 'document.elementFromPoint' is a bit buggy.
-		player.style.top = (positionTop <= skyHeight ? skyHeight : positionTop - 1) + 'px';
-		player.className = 'character walk up';
-	}
-
-	if (downPressed) {
-		// Don't go below the map (visible screen).
-		const screenHeight = document.documentElement.clientHeight;
-		player.style.top = (positionTop >= screenHeight - player.offsetHeight ? screenHeight - player.offsetHeight : positionTop + 1) + 'px';
-		player.className = 'character walk down';
-	}
-
-	if (leftPressed) {
-		player.style.left = (positionLeft <= 0 ? 0 : positionLeft - 1) + 'px';
-		player.className = 'character walk left';
-	}
-
-	if (rightPressed) {
-		player.style.left = (positionLeft >= screenWidth - player.offsetWidth ? screenWidth - player.offsetWidth : positionLeft + 1) + 'px';
-		player.className = 'character walk right';
+	if (!arrowFired) {
+		if (upPressed) {
+			player.style.top = (positionTop <= skyHeight ? skyHeight : positionTop - 1) + 'px';
+			if (!leftPressed && !rightPressed)
+				player.classList.remove('up', 'down', 'left', 'right', 'stand');
+			player.classList.add('character', playerHit ? 'hit' : 'walk', 'up');
+		}
+		if (downPressed) {
+			player.style.top = (positionTop >= screenHeight - player.offsetHeight ? screenHeight - player.offsetHeight : positionTop + 1) + 'px';
+			if (!leftPressed && !rightPressed)
+				player.classList.remove('up', 'down', 'left', 'right', 'stand');
+			player.classList.add('character', playerHit ? 'hit' : 'walk', 'down');
+		}
+		if (leftPressed) {
+			player.style.left = (positionLeft <= 0 ? 0 : positionLeft - 1) + 'px';
+			if (!upPressed && !downPressed)
+				player.classList.remove('up', 'down', 'left', 'right', 'stand');
+			player.classList.add('character', playerHit ? 'hit' : 'walk', 'left');
+		}
+		if (rightPressed) {
+			player.style.left = (positionLeft >= screenWidth - player.offsetWidth ? screenWidth - player.offsetWidth : positionLeft + 1) + 'px';
+			if (!upPressed && !downPressed)
+				player.classList.remove('up', 'down', 'left', 'right');
+			player.classList.add('character', 'walk', 'right');
+		}
 	}
 
 	if (spacePressed) {
@@ -420,9 +390,7 @@ function move({ player, skyHeight, skyWidth: screenWidth, groundHeight, docHeigh
 		if (!arrowFired) {
 			arrowFired = true;
 			const arrow = document.createElement('div');
-			arrow.className = 'arrow';
-			// Make arrow face where the last pressed was
-			arrow.style.transform = `rotate(${lastPressed == 'right' ? 0 : lastPressed == 'left' ? 180 : -90}deg)`;
+			arrow.className = `arrow ${lastPressed}`;
 			arrow.style.top = player.offsetTop + player.offsetHeight / 2 - arrow.offsetHeight / 2 + 'px';
 			arrow.style.left = player.offsetLeft + player.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
 			document.body.appendChild(arrow);
@@ -442,10 +410,8 @@ function move({ player, skyHeight, skyWidth: screenWidth, groundHeight, docHeigh
 
 				// Arrow is off screen
 				if (arrow.offsetTop <= 0 || arrow.offsetTop >= docHeight || arrow.offsetLeft <= 0 || arrow.offsetLeft >= screenWidth) {
-					console.log('off screen');
 					arrow?.remove();
 					clearInterval(arrowInterval);
-					// arrowFired = false;
 				}
 
 				// Arrow hits a bomb
@@ -453,20 +419,14 @@ function move({ player, skyHeight, skyWidth: screenWidth, groundHeight, docHeigh
 				if (arrow && bomb?.classList.contains('bomb')) {
 					bomb?.remove();
 					arrow?.remove();
-					bombsShot++; // TODO
-					bombsShotElement.textContent = +bombsShotElement.textContent + bombsShot;
+					bombsShotElement.textContent = ++bombsShotElement.textContent;
 					clearInterval(arrowInterval);
 				}
 			});
 		}
 
 		setTimeout(() => {
-			spacePressed = false;
-			arrowFired = false;
-			// if (lastPressedBeforeSpace === 'up') upPressed = true;
-			// else if (lastPressedBeforeSpace === 'down') downPressed = true;
-			// else if (lastPressedBeforeSpace === 'left') leftPressed = true;
-			// else if (lastPressedBeforeSpace === 'right') rightPressed = true;
+			spacePressed = arrowFired = false;
 			player.classList.remove('fire');
 		}, 500);
 	}
