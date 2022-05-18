@@ -92,10 +92,6 @@ body.playing .center .info {
     z-index: 2;
 }
 
-.explosion {
-    transform: scale(var(--scale, 1));
-}
-
 .hud {
     position: static;
     width: auto;
@@ -280,34 +276,30 @@ body.game-over .center {
     text-underline-offset: 4px;
 }
 
-.exploded {
+.explosion {
+    transform: scale(var(--scale, 1));
+}
+
+.explosion {
     animation: fadeOut .5s forwards;
 }
-.exploded::before, .exploded::after {
-	z-index: 999;
-	width: 128px;
-	height: 32px;
-	display: block;
-	content: " ";
-	background-image: url(/assets/imgs/bomb1.png);
-	background-position: 0 -192px;
-    /* background: url(/assets/imgs/bomb1.png) 0 -192px; */
-	animation: bombH .5s steps(1) infinite;
+
+.explosion:not(.shot) {
+    animation: fadeOut .7s forwards;
 }
 
-.exploded::after {
-	width: 32px;
-	height: 160px;
-	margin-top: -100px;
-	margin-left: 48px;
-	background-position: 0px -32px;
-	animation-name: boomV;
+.explosion::before, .explosion::after {
+    transform: translate(15px, -5px);
 }
 
-.bomb.exploded::before {
-    transform: scale(.2) translate(-218px, -50px);
+/* .bomb:not(.shot):is(::before, ::after) {
+    background-image: none;
+} */
+
+.explosion.shot::before {
+    transform: scale(.2) translate(80px, -30px);
 }
 
-.bomb.exploded::after {
-    transform: scale(.2) translate(-218px, -35px);
+.explosion.shot::after {
+    transform: scale(.2) translate(80px, -15px);
 }
