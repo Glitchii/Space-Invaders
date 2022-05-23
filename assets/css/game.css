@@ -2,7 +2,7 @@
 @import url('https://stockfont.org/?6c9104ed5c89e7a4966839d8d30af7dba1aa2b1f891952b5e9e0fdea697a8b81');
 
 body {
-	background-image: url(/assets/imgs/bg.png);
+	background-image: url(../imgs/bg.png);
 	margin: 0;
 	padding: 0;
 	font-family: 'Oxygen-Regular', sans-serif;
@@ -16,7 +16,7 @@ body {
 	height: 70vh;
 	left: 0;
 	top: 0;
-	background-image: url(/assets/imgs/nightSky.png);
+	background-image: url(../imgs/nightSky.png);
 	background-color: #000;
 }
 
@@ -47,7 +47,7 @@ aside {
 .character .body {
 	width: 32px;
 	height: 32px;
-	background-image: url(/assets/imgs/body1.png);
+	background-image: url(../imgs/body1.png);
 	background-position: 64px 0px;
 	margin-top: 14px;
 }
@@ -55,7 +55,7 @@ aside {
 .character .head {
 	width: 32px;
 	height: 32px;
-	background-image: url(/assets/imgs/head3.png);
+	background-image: url(../imgs/head3.png);
 	margin-bottom: 0;
 	position: absolute;
 	background-repeat: no-repeat;
@@ -87,23 +87,23 @@ aside ul {
 }
 
 #head0 {
-	background-image: url(/assets/imgs/head0.png);
+	background-image: url(../imgs/head0.png);
 }
 
 #head1 {
-	background-image: url(/assets/imgs/head1.png);
+	background-image: url(../imgs/head1.png);
 }
 
 #head2 {
-	background-image: url(/assets/imgs/head2.png);
+	background-image: url(../imgs/head2.png);
 }
 
 #head3 {
-	background-image: url(/assets/imgs/head3.png);
+	background-image: url(../imgs/head3.png);
 }
 
 #head4 {
-	background-image: url(/assets/imgs/head4.png);
+	background-image: url(../imgs/head4.png);
 }
 
 .bodies li {
@@ -111,23 +111,23 @@ aside ul {
 }
 
 #body0 {
-	background-image: url(/assets/imgs/body0.png);
+	background-image: url(../imgs/body0.png);
 }
 
 #body1 {
-	background-image: url(/assets/imgs/body1.png);
+	background-image: url(../imgs/body1.png);
 }
 
 #body2 {
-	background-image: url(/assets/imgs/body2.png);
+	background-image: url(../imgs/body2.png);
 }
 
 #body3 {
-	background-image: url(/assets/imgs/body3.png);
+	background-image: url(../imgs/body3.png);
 }
 
 #body4 {
-	background-image: url(/assets/imgs/body4.png);
+	background-image: url(../imgs/body4.png);
 }
 
 .tree {
@@ -142,15 +142,15 @@ aside ul {
 }
 
 #opponent .body {
-	background-image: url(/assets/imgs/body1.png);
+	background-image: url(../imgs/body1.png);
 }
 
 #opponent .head {
-	background-image: url(/assets/imgs/head1.png);
+	background-image: url(../imgs/head1.png);
 }
 
 .alien {
-	background-image: url(/assets/imgs/alien.png);
+	background-image: url(../imgs/alien.png);
 	position: absolute;
 	height: 93.8px;
 	width: 86px;
@@ -177,11 +177,11 @@ aside ul {
 }
 
 .enemy.grey .head {
-	background-image: url(/assets/imgs/baddygray.png);
+	background-image: url(../imgs/baddygray.png);
 }
 
 .enemy.grey .body {
-	background-image: url(/assets/imgs/baddygray.png);
+	background-image: url(../imgs/baddygray.png);
 	top: 32px;
 
 }
@@ -390,7 +390,7 @@ aside ul {
 
 
 .weapon.bow {
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	background-position: -55px -214px;
 	width: 16px;
 	height: 32px;
@@ -641,7 +641,7 @@ aside ul {
 	content: "";
 	width: 32px;
 	height: 24px;
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	background-position: -96px -82px;
 	display: block;
 	position: absolute;
@@ -656,7 +656,7 @@ aside ul {
 	content: "";
 	width: 32px;
 	height: 24px;
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	background-position: -96px -82px;
 	display: block;
 	position: absolute;
@@ -668,7 +668,7 @@ aside ul {
 
 
 .arrow {
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	width: 32px;
 	height: 10px;
 	position: absolute;
@@ -677,7 +677,7 @@ aside ul {
 
 
 .bomb {
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	width: 31px;
 	height: 10px;
 	position: absolute;
@@ -686,7 +686,7 @@ aside ul {
 }
 
 .start:before {
-	background-image: url(/assets/imgs/head3.png);
+	background-image: url(../imgs/head3.png);
 	background-repeat: no-repeat;
 	background-position: 0px -64px;
 	width: 32px;
@@ -736,7 +736,7 @@ aside ul {
 	height: 32px;
 	display: block;
 	content: " ";
-	background-image: url(/assets/imgs/bomb1.png);
+	background-image: url(../imgs/bomb1.png);
 	background-position: 0 -192px;
 	animation: bombH 0.5s steps(1) infinite;
 }
@@ -749,7 +749,7 @@ aside ul {
 	content: " ";
 	margin-top: -100px;
 	margin-left: 48px;
-	background-image: url(/assets/imgs/bomb1.png);
+	background-image: url(../imgs/bomb1.png);
 	background-position: 0px -32px;
 	animation: bombV 0.5s steps(1) infinite;
 
@@ -1020,7 +1020,7 @@ aside ul {
 	position: absolute;
 	margin-left: 8px;
 	margin-top: 12px;
-	background-image: url(/assets/imgs/sprites.png);
+	background-image: url(../imgs/sprites.png);
 	animation: enemydie 2s steps(1) forwards;
 	background-position: 0px -48px;
 }
@@ -1219,7 +1219,7 @@ ul {
 .health li {
 	width: 40px;
 	height: 48px;
-	background-image: url(/assets/imgs/state.png);
+	background-image: url(../imgs/state.png);
 	float: right;
 	margin-left: 8px;
 }
@@ -1228,7 +1228,7 @@ ul {
 .tile {
 	width: 16px;
 	height: 16px;
-	background-image: url(/assets/imgs/tiles.png);
+	background-image: url(../imgs/tiles.png);
 	padding: 0;
 }
 

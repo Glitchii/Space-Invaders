@@ -99,10 +99,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		Use WASD or arrow keys to move & dodge bombs.
 		Use the space bar to shoot with your arrows at the aliens ships.
 		
-		You have ${lives} lives, if you get hit, you will lose a life.
-		If you run out of lives, you lose.
+		You have ${lives} lives, if you get hit, you will lose a life. If you run out of lives, you lose.
 	
-		You level up every ${levelingInterval / 1000} seconds, alien, bomb, and alien shooting interval speed will increase at each level.
+		You level up every ${levelingInterval / 1000} seconds, alien spawn speed increases by 50ms, bomb speed by 100ms, and alien shooting interval speed by 200 as you level up.
+
 		Try to get as much dodges, levels, and kills as possible.`.replace(/^\t+/gm, '')));
 
 	renderLeaderBoard();
@@ -205,7 +205,8 @@ document.addEventListener('DOMContentLoaded', () => {
 				sky.appendChild(bomb);
 
 				const explode = () => {
-					bomb.style.top = randomLandY + 'px', bomb.style.left = randomLandX + 'px';
+					bomb.style.top = randomLandY + 'px';
+					bomb.style.left = randomLandX + 'px';
 					if (!sky.contains(bomb) && bomb.className !== 'explosion shot') return;
 					bomb.className = 'explosion';
 					bomb.style.setProperty('--scale', /* random explosion size */ Math.random() * (1.2 - .5) + .5);
@@ -213,10 +214,8 @@ document.addEventListener('DOMContentLoaded', () => {
 					clearInterval(shootIntervalFunc);
 
 					if (impact(player, bomb)) {
-						if (--lives <= 0) {
-							gameOver = true, player.className = 'character stand dead';
+						if (--lives <= 0)
 							return endGame();
-						}
 
 						playerHit = true;
 						player.classList.add('hit');
@@ -267,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function endGame() {
+		gameOver = true;
 		player.className = 'character stand dead';
 		nameLabel.textContent = nameLabel.dataset.text;
 		nameInput.classList.remove('hidden');
