@@ -801,9 +801,6 @@ aside ul {
 	}
 }
 
-.arrow.right {}
-
-
 .arrow.left {
 	transform: rotate(180deg)
 }
