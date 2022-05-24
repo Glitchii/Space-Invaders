@@ -45,6 +45,19 @@ function keydown(event) {
 		spacePressed = true;
 }
 
+function renderLeaderBoard() {
+	const board = JSON.parse(localStorage.getItem('board')) || {};
+	const tbody = document.querySelector('.board table tbody');
+	tbody.innerHTML = '';
+
+	for (const name of Object.keys(board).sort((a, b) => board[b].level - board[a].level)) {
+		const tr = tbody.appendChild(document.createElement('tr'));
+		tr.appendChild(document.createElement('td')).textContent = name;
+		tr.appendChild(document.createElement('td')).textContent = board[name].level;
+		tr.appendChild(document.createElement('td')).textContent = board[name].bombsDodged;
+	}
+}
+
 function impact(e, e1) {
 	const e1Left = e1.offsetLeft;
 	const e1Top = e1.offsetTop;
@@ -71,11 +84,11 @@ const renderLives = (health, lives) => {
 document.addEventListener('DOMContentLoaded', () => {
 	let intervals = [],
 		lives = livesDefault = 3,
-		spawnIntervalDefault = 2000,
-		shootIntervalMaxDefault = 4000,
-		shootIntervalMinDefault = 1000,
-		explosionTimeDefault = 1000,
-		bombSpeedDefault = 5000,
+		spawnInterval = spawnIntervalDefault = 2000,
+		shootIntervalMax = shootIntervalMaxDefault = 4000,
+		shootIntervalMin = shootIntervalMinDefault = 1000,
+		explosionTime = explosionTimeDefault = 1000,
+		bombSpeed = bombSpeedDefault = 5000,
 		bombsDodged = bombsDodgedDefault = 0,
 		bombsDodgedElement = document.getElementById('dodged'),
 		bombsShotElement = document.getElementById('shot'),
@@ -163,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		player.classList.add('blink');
 
-		const newAlien = () => {
+		function newAlien() {
 			if (gameOver)
 				return endGame();
 
@@ -252,19 +265,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		newAlien();
 	});
 
-	function renderLeaderBoard() {
-		const board = JSON.parse(localStorage.getItem('board')) || {};
-		const tbody = document.querySelector('.board table tbody');
-		tbody.innerHTML = '';
-
-		for (const name of Object.keys(board).sort((a, b) => board[b].level - board[a].level)) {
-			const tr = tbody.appendChild(document.createElement('tr'));
-			tr.appendChild(document.createElement('td')).textContent = name;
-			tr.appendChild(document.createElement('td')).textContent = board[name].level;
-			tr.appendChild(document.createElement('td')).textContent = board[name].bombsDodged;
-		}
-	}
-
 	function endGame() {
 		gameOver = true;
 		player.className = 'character stand dead';
@@ -293,9 +293,9 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (gameOver) return;
 
 				levelElement.textContent = ++level;
-				spawnInterval = Math.abs(spawnInterval - 50); // Decrese alien spawn interval time by 50ms at each level (making them spawn faster)
+				spawnInterval = Math.abs(spawnInterval - 50); // Decrese alien spawn interval time by 50 at each level (making them spawn faster)
 				bombSpeed = Math.abs(bombSpeed - 100); // 100ms for bomb speed.
-				shootIntervalMax = shootIntervalMax - 200 < 0 ? 0 : shootIntervalMax - 200; // 200ms for the maximum random shootign speed.
+				shootIntervalMax = shootIntervalMax - 200 < 0 ? 0 : shootIntervalMax - 200; // 200ms for the maximum random shooting speed.
 			}, levelingInterval)
 		);
 	}
