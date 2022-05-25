@@ -59,14 +59,14 @@ function renderLeaderBoard() {
 }
 
 function impact(e, e1) {
-	const e1Left = e1.offsetLeft;
-	const e1Top = e1.offsetTop;
-	const e1Width = e1.offsetWidth;
-	const e1Height = e1.offsetHeight;
 	const eLeft = e.offsetLeft;
 	const eTop = e.offsetTop;
 	const eWidth = e.offsetWidth;
 	const eHeight = e.offsetHeight;
+	const e1Left = e1.offsetLeft;
+	const e1Top = e1.offsetTop;
+	const e1Width = e1.offsetWidth;
+	const e1Height = e1.offsetHeight;
 
 	return e1Left < eLeft + eWidth && e1Left + e1Width > eLeft && e1Top < eTop + eHeight && e1Top + e1Height > eTop;
 }
@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		bombsShotElement = document.getElementById('shot'),
 		level = levelDefault = 1,
 		levelingInterval = 20000,
+		alienAniamtionDuration = 10000,
 		levelElement = document.getElementById('level'),
 		player = document.getElementById('player'),
 		startBtn = document.querySelector('.start'),
@@ -115,8 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
 		You have ${lives} lives, if you get hit, you will lose a life. If you run out of lives, you lose.
 	
 		You level up every ${levelingInterval / 1000} seconds, alien spawn speed increases by 50ms, bomb speed by 100ms, and alien shooting interval speed by 200 as you level up.
-
-		Try to get as much dodges, levels, and kills as possible.`.replace(/^\t+/gm, '')));
+		Try to get as much dodges, levels, and kills as possible.
+		
+		Explosions will still have an impact just by being close to them even if not directly in the explosion.`.replace(/^\t+/gm, '')));
 
 	renderLeaderBoard();
 	document.addEventListener('keydown', keydown);
@@ -124,6 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	nameInput.addEventListener('input', () => {
 		if (nameLabelAltered) return;
+		
 		nameLabel.textContent = 'Press enter to submit';
 		nameLabelAltered = true;
 	})
@@ -174,41 +177,34 @@ document.addEventListener('DOMContentLoaded', () => {
 		renderLives(health, lives);
 		blink(health);
 
-		player.classList.add('blink');
-
 		function newAlien() {
 			if (gameOver)
 				return endGame();
 
 			setTimeout(newAlien, spawnInterval);
+			
 			const alien = document.createElement('div');
 			const randomY = Math.random() * (sky.offsetHeight - sky.offsetHeight / 2 - alien.offsetHeight);
 			const randomX = Math.random() * (sky.offsetWidth - alien.offsetWidth);
+			const positionX = randomX / Math.ceil(Math.random() * 5 + 1);
+			
 			alien.style.left = randomX + 'px';
 			alien.style.top = randomY;
 			alien.className = 'alien';
 			sky.appendChild(alien);
 
-			let moveX = Math.ceil(Math.random() * (6 - 1) + 1),
-				posiotnX1 = randomX / moveX,
-				posiotnX2 = randomX / moveX,
-				shooting = true;
-
-			// Whether the alien should go from left then right, or vice versa.
+			// Whether the alien should go from left then right, or viceversa.
 			const leftFirst = Math.random() >= .5;
 			alien.animate([
 				{ top: '-50%', left: randomX + 'px', },
 				{ top: randomY + 'px', left: randomX + 'px', offset: .2, },
-				{ top: randomY + 'px', left: (leftFirst ? randomX - posiotnX1 : randomX + posiotnX2) + 'px', offset: .4, },
-				{ top: randomY + 'px', left: (leftFirst ? randomX - posiotnX1 : randomX + posiotnX2) + 'px', offset: .45, },
-				{ top: randomY + 'px', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: .65, },
-				{ top: randomY + 'px', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: .8, },
-				{ top: '-100%', left: (leftFirst ? randomX + posiotnX2 : randomX - posiotnX1) + 'px', offset: 1, }
-			], { duration: 10000, easing: 'linear' })
-				.onfinish = () => {
-					shooting = false;
-					alien?.remove();
-				}
+				{ top: randomY + 'px', left: (leftFirst ? randomX - positionX : randomX + positionX) + 'px', offset: .4, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX - positionX : randomX + positionX) + 'px', offset: .45, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX + positionX : randomX - positionX) + 'px', offset: .65, },
+				{ top: randomY + 'px', left: (leftFirst ? randomX + positionX : randomX - positionX) + 'px', offset: .8, },
+				{ top: '-100%', left: (leftFirst ? randomX + positionX : randomX - positionX) + 'px', offset: 1, }
+			], { duration: alienAniamtionDuration, easing: 'linear' })
+				.onfinish = () => alien?.remove();
 
 			const shootIntervalFunc = setInterval(() => {
 				const bomb = document.createElement('div');
@@ -224,7 +220,6 @@ document.addEventListener('DOMContentLoaded', () => {
 					bomb.className = 'explosion';
 					bomb.style.setProperty('--scale', /* random explosion size */ Math.random() * (1.2 - .5) + .5);
 					bomb.style.removeProperty('transform');
-					clearInterval(shootIntervalFunc);
 
 					if (impact(player, bomb)) {
 						if (--lives <= 0)
@@ -244,9 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
 					setInterval(() => bomb?.remove(), explosionTime);
 				}
 
-				if (!shooting)
-					return explode();
-
 				bomb.animate([
 					{ top: alien.offsetTop + alien.offsetHeight + 'px', left: alien.offsetLeft + alien.offsetWidth / 2 - 15 + 'px', },
 					{ top: randomLandY + 'px', left: randomLandX + 'px' },
@@ -260,6 +252,10 @@ document.addEventListener('DOMContentLoaded', () => {
 			}, Math.ceil(Math.random() * (shootIntervalMax - shootIntervalMin) + shootIntervalMin));
 
 			intervals.push(shootIntervalFunc);
+			setInterval(() => {
+				clearInterval(shootIntervalFunc);
+				// intervals.splice(intervals.indexOf(shootIntervalFunc), 1);
+			}, alienAniamtionDuration - 200);
 		}
 
 		newAlien();
@@ -267,22 +263,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	function endGame() {
 		gameOver = true;
-		player.className = 'character stand dead';
 		nameLabel.textContent = nameLabel.dataset.text;
 		nameInput.classList.remove('hidden');
 		startBtn.classList.remove('hidden');
+
 		document.body.classList.add('game-over');
 		document.body.classList.remove('playing');
 
 		if (!onMobile()) {
 			document.body.classList.add('pc');
-			// Wait 1.5 seconds as the player might still be holding a WASD key.
+			// Wait 1.5 seconds as the player might still be holding some W,A,S,D key.
 			setTimeout(() => nameInput.focus(), 1500);
 		}
 
 		for (const e of document.querySelectorAll('.alien, .bomb, .explosion'))
-			e.remove();
+			e.animate([{ opacity: 0, offset: 1 }], { duration: 1000, easing: 'linear' })
+				.onfinish = () => e.remove();
 
+		player.className = 'character stand dead';
 		stopBackgroundWork();
 	}
 
@@ -295,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				levelElement.textContent = ++level;
 				spawnInterval = Math.abs(spawnInterval - 50); // Decrese alien spawn interval time by 50 at each level (making them spawn faster)
 				bombSpeed = Math.abs(bombSpeed - 100); // 100ms for bomb speed.
-				shootIntervalMax = shootIntervalMax - 200 < 0 ? 0 : shootIntervalMax - 200; // 200ms for the maximum random shooting speed.
+				shootIntervalMax = shootIntervalMax - 200 < 0 ? 0 : shootIntervalMax - 200; // 200ms for the maximum random shooting interval.
 			}, levelingInterval)
 		);
 	}
@@ -303,12 +301,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	function stopBackgroundWork() {
 		for (const interval of intervals)
 			clearInterval(interval);
+			
 		intervals = [];
 	}
 });
 
 function move({ player, sky, bombsShotElement }) {
 	const noDirections = condition => condition && player.classList.remove('up', 'down', 'left', 'right', 'stand');
+
 	if (!arrowFired) {
 		if (upPressed) {
 			player.style.top = (player.offsetTop <= sky.offsetHeight ? sky.offsetHeight : player.offsetTop - 1) + 'px';
@@ -335,7 +335,7 @@ function move({ player, sky, bombsShotElement }) {
 
 	if (spacePressed) {
 		player.className = `character stand ${lastPressed} fire`;
-		if (arrowFired || document.querySelector('.arrow')) return;
+		if (arrowFired || document.querySelector('.arrow'))return;
 		
 		arrowFired = true;
 		const arrow = document.body.appendChild(document.createElement('div'));
@@ -344,7 +344,7 @@ function move({ player, sky, bombsShotElement }) {
 		arrow.style.left = player.offsetLeft + player.offsetWidth / 2 - arrow.offsetWidth / 2 + 'px';
 		const pressedBefore = lastPressed;
 		const arrowMovementInterval = setInterval(() => {
-			// Move arrow facing player's last direction untill it's offscreen.
+			// Move arrow while facing it where the character was facing last until it's offscreen.
 			if (pressedBefore === 'up')
 				arrow.style.top = arrow.offsetTop - 5 + 'px';
 			else if (pressedBefore === 'down')

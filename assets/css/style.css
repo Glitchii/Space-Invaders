@@ -88,7 +88,7 @@ body.playing .center .info {
     /* max-width: 200px; */
 }
 
-.alien {
+.alien, .explosion {
     z-index: 2;
 }
 
@@ -218,7 +218,6 @@ h1, h2, h3, h4, h5, h6, caption {
     }
 }
 
-
 @keyframes deadTextAn {
     from {
         opacity: 0;
@@ -278,9 +277,6 @@ body.game-over .center {
 
 .explosion {
     transform: scale(var(--scale, 1));
-}
-
-.explosion {
     animation: fadeOut .5s forwards;
 }
 
@@ -291,10 +287,6 @@ body.game-over .center {
 .explosion::before, .explosion::after {
     transform: translate(15px, -5px);
 }
-
-/* .bomb:not(.shot):is(::before, ::after) {
-    background-image: none;
-} */
 
 .explosion.shot::before {
     transform: scale(.2) translate(80px, -30px);
