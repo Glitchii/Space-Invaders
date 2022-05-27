@@ -276,22 +276,32 @@ body.game-over .center {
 }
 
 .explosion {
-    transform: scale(var(--scale, 1));
+    transform: scale(var(--scale, 1)) translate(15px, -70px);
     animation: fadeOut .5s forwards;
 }
 
 .explosion:not(.shot) {
-    animation: fadeOut .7s forwards;
+    animation-duration: .7s;
 }
 
-.explosion::before, .explosion::after {
-    transform: translate(15px, -5px);
+.explosion::before,
+.explosion::after {
+    /* transform: translate(15px, -5px); */
+    margin: auto;
+    position: relative;
+}
+.explosion::before {
+    top: 65px;
+}
+
+.explosion::after {
+    top: -32px;
 }
 
 .explosion.shot::before {
-    transform: scale(.2) translate(80px, -30px);
+    transform: scale(.2) translate(0, -30px);
 }
 
 .explosion.shot::after {
-    transform: scale(.2) translate(80px, -15px);
+    transform: scale(.2) translate(0, -25px);
 }
